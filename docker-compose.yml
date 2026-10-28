@@ -1,0 +1,13 @@
+services:
+  api:
+    build: ./server
+    container_name: nexttap-api
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./server/data:/app/data
+    restart: unless-stopped
+    # 2C4G 机器上限制内存，避免 OCR 峰值把系统拖死
+    mem_limit: 1500m
