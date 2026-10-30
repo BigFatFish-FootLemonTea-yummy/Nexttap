@@ -5,13 +5,38 @@ __pycache__/
 venv/
 *.egg-info/
 
-# 环境变量
+# 环境变量（含 API Key，绝对不能提交）
 .env
 .env.local
 
-# 数据（截图与数据库不进仓库）
+# 服务端运行时数据
 server/data/
-data/
+
+# ============================================================
+# 评测集
+#   gt.jsonl / pred.jsonl / paths.jsonl 进仓库（纯文本，答辩要展示）
+#   图片一律不进仓库（体积大 + 含真实界面截图，涉及隐私）
+#
+# 注意：.gitignore 不支持行尾注释，注释必须单独成行
+# ============================================================
+
+# 打码后的评测图
+data/eval/images/
+
+# 打码前的原图，含明文隐私，绝对不能提交
+data/eval/images_original/
+
+# 中间产物，可随时用脚本重建
+data/eval/.cache_png/
+data/eval/_ocr/
+data/eval/_preview/
+data/eval/_redact_preview/
+data/eval/_flow/
+
+# 损坏行备份 / 临时文件
+data/eval/*.broken-*.jsonl
+data/eval/*.jsonl.tmp
+data/eval/*.jsonl.bak
 
 # 前端
 node_modules/

@@ -30,7 +30,11 @@
 │  ├─ tests/               # 纯逻辑单测（不需要 OCR / LLM）
 │  └─ requirements.txt
 ├─ web/                    # Vue 3 前端（见 web/README.md）
-├─ tools/                  # 评测脚本
+├─ tools/                  # 标注与评测脚本
+│  ├─ annotate.py          # bbox 标注工具（tkinter，零依赖）
+│  ├─ run_eval.py          # 批量跑定位，产出 pred.jsonl
+│  └─ eval.py              # 算 hit@1，带 Wilson 置信区间
+├─ data/eval/              # 评测集（图片不入库，只提交 gt.jsonl / pred.jsonl）
 ├─ docs/                   # 设计文档与技术文档
 ├─ .env.example
 └─ docker-compose.yml
@@ -75,11 +79,38 @@ python tests/test_candidates.py
 
 ---
 
+## 评测流程（gate：hit@1 ≥ 85%，50 张）
+
+```bash
+# 1. 把 50 张截图放进 data/eval/images/
+# 2. 拖框标注真值
+python tools/annotate.py
+
+# 3. 后端起来后，批量跑
+python tools/run_eval.py --limit 5     # 先试 5 张
+python tools/run_eval.py               # 跑全量
+
+# 4. 出数字
+python tools/eval.py --ci
+```
+
+**命中判定**（对应定稿 D9）：预测框中心点落在真值框内即算 hit。
+
+真值 `data/eval/gt.jsonl`，每行一张：
+
+```json
+{"file": "images/001.png", "goal": "给儿子打视频电话", "bbox": [100, 200, 300, 260]}
+```
+
+`bbox` 是**原图像素坐标** `[x0, y0, x1, y1]`。
+
+---
+
 ## 当前进度
 
 - [x] 设计框架、技术选型、项目定稿
-- [x] 定位管线验证脚本（`tools/`）
 - [x] 后端骨架：上传 / 定位 / 健康检查
-- [] 定位准确率 gate（目标 hit@1 ≥ 85%，50 张）
+- [x] 定位管线验证脚本（`tools/`）
+- [ ] 定位准确率 gate（目标 hit@1 ≥ 85%，50 张）
 - [ ] 前端：拍照上传 → 微调 → 全屏展示
 - [ ] 多步流程与 RAG 预热
