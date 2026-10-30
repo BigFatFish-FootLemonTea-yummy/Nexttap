@@ -38,6 +38,22 @@ data/eval/*.broken-*.jsonl
 data/eval/*.jsonl.tmp
 data/eval/*.jsonl.bak
 
+# ============================================================
+# 一次性数据准备脚本（本地保留，不进仓库）
+#   这些脚本已经完成使命：164 条用例和 120 条任务链都已生成，
+#   保留在本地是为了以后换图时能重新跑，但不需要公开。
+#   仓库里只留长期有用的：annotate / run_eval / eval / redact / selfcheck
+# ============================================================
+tools/ocr_dump.py
+tools/auto_annotate.py
+tools/sync_paths.py
+tools/fix_chains.py
+tools/quality_tag.py
+tools/priority.py
+tools/chain_flow.py
+tools/_test_layout.py
+tools/_test_gui.py
+
 # 前端
 node_modules/
 dist/
