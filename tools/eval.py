@@ -194,10 +194,15 @@ def evaluate(
     per_image: Dict[str, List[bool]] = defaultdict(list)
     per_chain: Dict[str, List[Tuple[int, bool]]] = defaultdict(list)
 
+    # 分阶段统计：step=1 是「用户口语 -> 元素」，step>=2 是「路径已定 -> 找元素」
+    split_hits: Dict[bool, int] = {True: 0, False: 0}
+    split_scored: Dict[bool, int] = {True: 0, False: 0}
+
     for key, case in cases.items():
         label = pretty_label(key)
         tid = case.get("task_id", "")
         step = int(case.get("step", 1))
+        is_first = step == 1
         pred = pred_by_key.get(key)
         if pred is None:
             missing.append(label)
@@ -207,6 +212,7 @@ def evaluate(
             per_image[str(case["file"])].append(False)
             if tid:
                 per_chain[tid].append((step, False))
+            split_scored[is_first] += 1
             continue
 
         pred_box = pred.get("bbox")
@@ -215,6 +221,7 @@ def evaluate(
             per_image[str(case["file"])].append(False)
             if tid:
                 per_chain[tid].append((step, False))
+            split_scored[is_first] += 1
             continue
 
         if pred.get("elapsed_ms") is not None:
@@ -226,8 +233,10 @@ def evaluate(
         per_image[str(case["file"])].append(hit)
         if tid:
             per_chain[tid].append((step, hit))
+        split_scored[is_first] += 1
         if hit:
             hits += 1
+            split_hits[is_first] += 1
         else:
             misses.append(label)
 
@@ -248,6 +257,18 @@ def evaluate(
     print(f"未命中            : {len(misses)}")
     print(f"调用失败(422/5xx) : {len(errors)}")
     print(f"hit@1             : {rate * 100:.1f}%   ({hits}/{scored})")
+
+    if split_scored[True] or split_scored[False]:
+        print()
+        print("-- 分阶段 hit@1 --")
+        print("  step=1  用户口语 -> 元素（真正的端到端能力）")
+        if split_scored[True]:
+            r = split_hits[True] / split_scored[True] * 100
+            print(f"          {split_hits[True]}/{split_scored[True]} = {r:.1f}%")
+        print("  step>=2 路径已定 -> 在该屏找到元素")
+        if split_scored[False]:
+            r = split_hits[False] / split_scored[False] * 100
+            print(f"          {split_hits[False]}/{split_scored[False]} = {r:.1f}%")
 
     if show_ci and scored:
         lo, hi = wilson(hits, scored)

@@ -1,0 +1,39 @@
+# 首批 50 条的 step=1 口语化映射
+# 格式：task_id <TAB> 旧 goal <TAB> 新 goal <TAB> 状态
+# 规则：新 goal 里**不能出现**目标按钮的完整文字，否则等于把答案告诉模型。
+# 状态：draft = AI 起草待确认；confirmed = 真人确认过。
+#
+# 请找 2-3 个人（最好包括一位长辈）把「新 goal」念一遍，
+# 不像人话的直接改成他们真实会说的说法，然后把 draft 改成 confirmed。
+
+hospital.book_appointment	点预约挂号	我想挂个号	draft
+hospital.add_patient	点添加就诊人	帮我把老伴的信息加上	draft
+hospital.pay_bill	点门诊缴费	看完病在哪儿交钱	draft
+gov.insurance_code	点医保电子凭证	去医院要出示的那个码	draft
+hospital.pick_dept	选神经医学科	我头晕，该挂哪个科	draft
+hospital.pick_doctor	选医生袁嘉蔚	就找上次给我看的那个大夫	draft
+hospital.confirm_book	确认挂号详情	信息都对，下一步吧	draft
+hospital.visit_record	点就诊记录	我想看看以前看病的记录	draft
+gov.health_card	点电子健康卡	去医院要刷的那张卡	draft
+hospital.pay_pending	选待支付	刚才没交上的那笔	draft
+gov.health_code	点粤省事码	政府办事那个小程序里的码	draft
+gov.elder_mode	点关怀版	字太小了，弄大一点	draft
+gov.insurance	点医保	看病报销那个	draft
+gov.insurance_balance	查医保账户余额	我卡里还有多少钱	draft
+gov.medical_service	点就医	我要去看病	draft
+gov.social_security	点个人参保信息	我交了几年社保了	draft
+gov.family_service	点亲情服务	帮我儿子也弄一下	draft
+gov.pension	点养老保险	退休金那个	draft
+gov.my_social_card	点我的社保卡	我的卡在哪儿看	draft
+map.taxi	点打车	叫个车	draft
+wechat.video_call_son	点儿子的微信	我想看看儿子	draft
+wechat.open_chat	点第一个聊天	最上面那个人的消息	draft
+wechat.send_photo	点相册	把照片发过去	draft
+wechat.transfer	点转账	给他转点钱	draft
+map.subway_qr	点广州地铁乘车码	进地铁站要刷的	draft
+hospital.invoice	点门诊发票	报销要的那个票据	draft
+gov.insurance_anchor	点医保定点	哪家医院能报销	draft
+hospital.physical_book	点体检预约	我想约个检查身体的	draft
+hospital.physical_pay	点体检缴费	那个套餐的钱怎么付	draft
+hospital.physical_report	点体检报告查询	上次查体的结果出来没	draft
+hospital.online_consult	点线上问诊	在网上问问大夫	draft
