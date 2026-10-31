@@ -15,6 +15,7 @@ const galleryInput = ref<HTMLInputElement | null>(null)
 const image = ref<CompressedImage | null>(null)
 const goal = ref('')
 const preparing = ref(false)
+const sampleLoading = ref(false)
 const stage = ref<'idle' | 'uploading' | 'locating'>('idle')
 const error = ref<ApiError | null>(null)
 const elapsed = ref(0)
@@ -23,7 +24,7 @@ let timer: number | undefined
 // step=1 的 goal 必须是"用户口语"，不能说成按钮名（评测口径同样的要求）
 const GOAL_CHIPS = ['我想看看儿子', '我想挂个号', '我想连 WiFi', '我想付钱', '我想看天气预报']
 
-const busy = computed(() => stage.value !== 'idle' || preparing.value)
+const busy = computed(() => stage.value !== 'idle' || preparing.value || sampleLoading.value)
 const goalLength = computed(() => goal.value.trim().length)
 const goalInvalid = computed(() => goalLength.value === 0 || goalLength.value > 100)
 const canSubmit = computed(() => Boolean(image.value) && !goalInvalid.value && !busy.value)
@@ -55,6 +56,30 @@ async function onFileChange(event: Event) {
     error.value = new ApiError(0, 'invalid', err instanceof Error ? err.message : '图片读取失败，请换一张')
   } finally {
     preparing.value = false
+  }
+}
+
+/** 一键示例：用内置截图跑完整链路，答辩现场不依赖拍照和网络 */
+async function loadSample() {
+  if (busy.value) return
+  error.value = null
+  sampleLoading.value = true
+  try {
+    const res = await fetch(`${import.meta.env.BASE_URL}samples/hospital-001.jpg`)
+    if (!res.ok) throw new Error('示例图片加载失败')
+    const blob = await res.blob()
+    const file = new File([blob], 'sample.jpg', { type: blob.type || 'image/jpeg' })
+    image.value = await compressImage(file)
+    goal.value = '我想挂个号'
+    // 先放开 busy，否则 submit 里的 canSubmit 会把自己挡住
+    sampleLoading.value = false
+    await submit()
+  } catch (err) {
+    image.value = null
+    error.value =
+      err instanceof ApiError ? err : new ApiError(0, 'network', '示例加载失败，请重试')
+  } finally {
+    sampleLoading.value = false
   }
 }
 
@@ -117,6 +142,17 @@ async function submit() {
         <UiButton size="lg" :disabled="busy" @click="pick('camera')">📷 拍照</UiButton>
         <UiButton size="lg" variant="outline" :disabled="busy" @click="pick('gallery')">🖼 相册</UiButton>
       </div>
+      <p class="mt-3 text-xs text-muted-foreground">
+        没有截图？
+        <button
+          type="button"
+          class="text-primary underline underline-offset-2 disabled:opacity-60"
+          :disabled="busy"
+          @click="loadSample"
+        >
+          {{ sampleLoading ? '加载示例中…' : '看一个示例' }}
+        </button>
+      </p>
     </section>
 
     <section v-else class="overflow-hidden rounded-lg border border-border bg-card">

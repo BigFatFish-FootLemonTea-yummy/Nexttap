@@ -23,6 +23,26 @@ function exit() {
   void router.push({ name: 'result' })
 }
 
+/**
+ * 连点两下才退出。
+ * 现场是帮助者举着手机给老人看，单击即退会被误触打断演示；
+ * 双击仍是单手可完成的动作，且 touch-action: manipulation 已禁用双击缩放。
+ */
+let lastTap = 0
+function onSurfaceTap() {
+  const now = Date.now()
+  if (now - lastTap < 800) {
+    exit()
+    return
+  }
+  lastTap = now
+  hintVisible.value = true
+  window.clearTimeout(hintTimer)
+  hintTimer = window.setTimeout(() => {
+    hintVisible.value = false
+  }, 2000)
+}
+
 onMounted(() => {
   // 进入全屏本身来自一次点击，属于用户手势，多数浏览器允许直接播报
   window.setTimeout(replay, 300)
@@ -42,10 +62,10 @@ onBeforeUnmount(() => {
   <div
     class="fixed inset-0 z-50 flex flex-col bg-white text-slate-900"
     style="touch-action: manipulation"
-    @click="exit"
+    @click="onSurfaceTap"
   >
     <div class="flex items-center justify-between px-3 pt-safe">
-      <span v-if="hintVisible" class="text-sm text-slate-500">点空白处退出</span>
+      <span v-if="hintVisible" class="text-sm text-slate-500">连点两下退出</span>
       <span v-else class="text-sm text-slate-400">给老人看</span>
       <button
         type="button"
