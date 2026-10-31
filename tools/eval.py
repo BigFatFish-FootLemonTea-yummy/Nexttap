@@ -83,6 +83,41 @@ def wilson(k: int, n: int, z: float = 1.96) -> Tuple[float, float]:
     return max(0.0, mid - half), min(1.0, mid + half)
 
 
+def cluster_bootstrap(
+    per_image: Dict[str, List[bool]],
+    iters: int = 2000,
+    seed: int = 42,
+) -> Tuple[float, float]:
+    """按图片聚类的 bootstrap 区间。
+
+    为什么需要它：164 个用例只分布在 47 张图上，同一张图的 5–10 个用例高度相关
+    （同一屏、同一批 OCR 候选、同一个 prompt 结果）。把 164 当成 164 个独立样本
+    去算 Wilson 区间，会把区间算窄，显得比实际更自信。
+
+    做法：以「图片」为重采样单位，整张图的用例一起抽，这样保留了组内相关性。
+    评委若追问「91.5% 的置信区间」，这个数才站得住。
+    """
+    import random
+
+    groups = [v for v in per_image.values() if v]
+    if len(groups) < 2:
+        return 0.0, 1.0
+    rng = random.Random(seed)
+    rates: List[float] = []
+    n_img = len(groups)
+    for _ in range(iters):
+        sample = [groups[rng.randrange(n_img)] for _ in range(n_img)]
+        flat = [h for grp in sample for h in grp]
+        if flat:
+            rates.append(sum(flat) / len(flat))
+    if not rates:
+        return 0.0, 1.0
+    rates.sort()
+    lo = rates[int(0.025 * len(rates))]
+    hi = rates[min(len(rates) - 1, int(0.975 * len(rates)))]
+    return lo, hi
+
+
 def case_key(row: Dict[str, Any]) -> str:
     """用例唯一键：文件名 + task_id + step + goal。
 
@@ -272,7 +307,15 @@ def evaluate(
 
     if show_ci and scored:
         lo, hi = wilson(hits, scored)
-        print(f"95% Wilson 区间   : [{lo * 100:.1f}%, {hi * 100:.1f}%]")
+        print(f"95% Wilson 区间   : [{lo * 100:.1f}%, {hi * 100:.1f}%]"
+              f"   （假设 {scored} 个用例相互独立）")
+        n_img = len([v for v in per_image.values() if v])
+        if n_img >= 2:
+            clo, chi = cluster_bootstrap(per_image)
+            print(f"95% 聚类区间      : [{clo * 100:.1f}%, {chi * 100:.1f}%]"
+                  f"   （按 {n_img} 张图重采样，推荐引用这个）")
+            print(f"  说明：用例不独立（同图用例共享屏幕与候选），Wilson 区间偏窄，"
+                  f"技术文档请用聚类区间")
 
     if latencies:
         latencies.sort()

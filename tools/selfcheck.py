@@ -218,6 +218,31 @@ if GT.exists():
                  f"期望从 1 开始连续，实际 {uniq}")
         else:
             ok(f"链 {tid} 步骤连续：{uniq}")
+
+    # 4.6 task_id / step 必须完整（缺了会被误算进 step=1，污染最关键指标）
+    #     2026-11-01 踩过：5 行漏填 task_id/step，被 apply_goal_map 整体跳过，
+    #     既没口语化也没补身份，step 缺省成 1，虚增了 step=1 的样本。
+    broken = [(i, r) for i, r in enumerate(rows, 1)
+              if not str(r.get("task_id") or "").strip() or r.get("step") is None]
+    if broken:
+        bad(f"有 {len(broken)} 行缺 task_id / step",
+            "\n        ".join(f"第{i}行 {r.get('file')} {r.get('goal')!r}" for i, r in broken[:10])
+            + "\n        修法：python tools/repair_eval_data.py --dry-run")
+    else:
+        ok("所有行都有 task_id 和 step")
+
+    # 4.7 同一 bbox 不能对应多个身份（apply_goal_map 漏改会留下这种）
+    by_box: dict[tuple, set] = {}
+    for r in rows:
+        k = (r["file"], tuple(r["bbox"][:4]))
+        by_box.setdefault(k, set()).add((str(r.get("task_id") or ""), r.get("step")))
+    conflicts = {k: v for k, v in by_box.items() if len(v) > 1}
+    if conflicts:
+        warn(f"有 {len(conflicts)} 个 bbox 对应多个 task_id/step",
+             "\n        ".join(f"{k[0]} {list(k[1])} -> {v}" for k, v in list(conflicts.items())[:5])
+             + "\n        这些行可能是同一用例被拆成了两条，需人工确认")
+    else:
+        ok("没有重复 bbox")
 else:
     warn("gt.jsonl 不存在", "还没开始标注")
 

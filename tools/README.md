@@ -1,6 +1,6 @@
 # 评测工具
 
-评测集的标注、运行与打分。三个核心脚本 + 两个辅助脚本。
+评测集的标注、运行与打分。核心脚本 + 数据维护脚本。
 
 ---
 
@@ -17,6 +17,28 @@ python tools/run_eval.py --gt data/eval/gt_first50.jsonl --out data/eval/pred50.
 python tools/eval.py --gt data/eval/gt_first50.jsonl --pred data/eval/pred50.jsonl --ci
 ```
 
+## 数据维护（改 gt 前后都要跑）
+
+```bash
+# 补缺失的 task_id / step + 一致性审计（先 dry-run 看报告）
+python tools/repair_eval_data.py --dry-run
+python tools/repair_eval_data.py --write
+
+# 查 goal 是否泄漏目标框文字（跑 47 张图约 2 分钟，需要 OCR 依赖）
+python tools/audit_goal_leak.py
+```
+
+**这两个检查为什么必须做**（2026-11-01 踩过的坑）：
+
+- `gt.jsonl` 里有 5 行漏填 `task_id`/`step`，而 `apply_goal_map.py` 只改
+  「有 task_id 且 step=1」的行，于是整行被跳过 → step 缺省成 1，混进最关键的
+  step=1 指标，同时把两条链的步数算错、让 `gt_first50` 匹配不上。
+- `step=1` 的 119 条里曾有 82 条 goal 直接写着目标按钮的文字（goal `点公积金`
+  而框里就是"公积金"），模型做字符串匹配就能命中。审计显示：泄漏组命中
+  95.1%，未泄漏组 81.1%，差 14 个百分点。
+
+`selfcheck.py` 现在会自动检查「缺 task_id/step」和「同 bbox 多身份」两项。
+
 输出示例：
 
 ```
@@ -24,7 +46,8 @@ python tools/eval.py --gt data/eval/gt_first50.jsonl --pred data/eval/pred50.jso
 已评测            : 50   （缺预测 0 个）
 命中              : 44
 hit@1             : 88.0%   (44/50)
-95% Wilson 区间   : [76.2%, 94.4%]
+95% Wilson 区间   : [76.2%, 94.4%]   （假设 50 个用例相互独立）
+95% 聚类区间      : [75.1%, 95.2%]   （按 N 张图重采样，推荐引用这个）
 时延 p50/p90      : 2400ms / 3100ms   (F2 要求 ≤5000ms)
 
 -- 整链成功率（一条链所有步全对才算成功）--
@@ -39,9 +62,11 @@ hit@1             : 88.0%   (44/50)
 
 | 脚本 | 作用 |
 |---|---|
-| **`eval.py`** | 算 hit@1、Wilson 置信区间、时延、整链成功率 |
+| **`eval.py`** | 算 hit@1、Wilson 区间 + 聚类区间、时延、整链成功率 |
 | **`run_eval.py`** | 批量调后端，产出 `pred.jsonl` |
 | **`annotate.py`** | 手工标注 GUI（拖框、缩放、任务链下拉） |
+| **`repair_eval_data.py`** | 补缺失的 task_id/step、重建 gt_first50、一致性审计 |
+| **`audit_goal_leak.py`** | OCR 逐框检查 goal 是否泄漏答案 |
 | `redact.py` | 隐私打码：扫描 PII 并用纯色块遮盖 |
 | `selfcheck.py` | 数据完整性自检 |
 

@@ -35,6 +35,8 @@ data/eval/_flow/
 data/eval/*.broken-*.jsonl
 data/eval/*.jsonl.tmp
 data/eval/*.jsonl.bak
+data/eval/*.bak-*
+data/eval/_leak_audit.json
 
 # ============================================================
 # 一次性数据准备脚本（本地保留，不进仓库）

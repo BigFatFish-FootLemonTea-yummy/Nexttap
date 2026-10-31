@@ -51,7 +51,7 @@
 {"file": "images/018.jpg", "task_id": "gov.health_code", "step": 1, "goal": "政府办事那个小程序里的码", "bbox": [24, 276, 290, 393], "quality": "ok"}
 {"file": "images/018.jpg", "task_id": "gov.digital_space", "step": 1, "goal": "点数字空间", "bbox": [338, 276, 608, 393], "quality": "ok"}
 {"file": "images/018.jpg", "task_id": "gov.quick_service", "step": 1, "goal": "点即接即办", "bbox": [655, 276, 920, 393], "quality": "ok"}
-{"file": "images/018.jpg", "goal": "点关怀版", "bbox": [978, 276, 1198, 396], "quality": "ok"}
+{"file": "images/018.jpg", "task_id": "gov.elder_mode", "step": 1, "goal": "点关怀版", "bbox": [978, 276, 1198, 396], "quality": "ok"}
 {"file": "images/018.jpg", "task_id": "gov.social_card_query", "step": 1, "goal": "点社保卡信息查询", "bbox": [157, 786, 574, 882], "quality": "ok"}
 {"file": "images/018.jpg", "task_id": "gov.insurance", "step": 1, "goal": "看病报销那个", "bbox": [667, 946, 887, 1225], "quality": "ok"}
 {"file": "images/018.jpg", "task_id": "gov.housing_fund", "step": 1, "goal": "点公积金", "bbox": [98, 1134, 293, 1235], "quality": "ok"}
@@ -70,7 +70,7 @@
 {"file": "images/025.jpg", "task_id": "gov.market_supervise", "step": 1, "goal": "点市场监管", "bbox": [380, 284, 592, 482], "quality": "ok"}
 {"file": "images/041.jpg", "task_id": "wechat.video_call_son", "step": 1, "goal": "我想看看儿子", "bbox": [8, 434, 1252, 610], "quality": "ok"}
 {"file": "images/041.jpg", "task_id": "wechat.open_chat", "step": 1, "goal": "最上面那个人的消息", "bbox": [8, 0, 1252, 162], "quality": "ok"}
-{"file": "images/042.jpg", "goal": "确认当前聊天", "bbox": [520, 8, 726, 129], "quality": "ok"}
+{"file": "images/042.jpg", "task_id": "wechat.video_call_son", "step": 2, "goal": "确认当前聊天", "bbox": [520, 8, 726, 129], "quality": "ok"}
 {"file": "images/043.jpg", "task_id": "wechat.video_call_son", "step": 2, "goal": "点视频通话", "bbox": [683, 368, 867, 571], "quality": "ok"}
 {"file": "images/043.jpg", "task_id": "wechat.send_photo", "step": 1, "goal": "把照片发过去", "bbox": [138, 362, 251, 574], "quality": "ok"}
 {"file": "images/043.jpg", "task_id": "wechat.take_photo", "step": 1, "goal": "点拍摄", "bbox": [428, 362, 542, 574], "quality": "ok"}
@@ -130,7 +130,7 @@
 {"file": "images/029.jpg", "task_id": "gov.pension_proof", "step": 1, "goal": "点养老待遇收入证明", "bbox": [52, 352, 557, 461], "quality": "ok"}
 {"file": "images/029.jpg", "task_id": "gov.social_cert_query", "step": 1, "goal": "点社会保险参保证明查询", "bbox": [52, 556, 676, 657], "quality": "ok"}
 {"file": "images/029.jpg", "task_id": "gov.rights_record", "step": 1, "goal": "点个人权益单", "bbox": [52, 1029, 380, 1142], "quality": "ok"}
-{"file": "images/031.jpg", "goal": "点专家号预约", "bbox": [277, 150, 527, 247], "quality": "ok"}
+{"file": "images/031.jpg", "task_id": "hospital.book_appointment", "step": 2, "goal": "点专家号预约", "bbox": [277, 150, 527, 247], "quality": "ok"}
 {"file": "images/031.jpg", "task_id": "hospital.rx_pay", "step": 1, "goal": "点处方在线支付", "bbox": [869, 156, 1158, 240], "quality": "ok"}
 {"file": "images/031.jpg", "task_id": "hospital.card_manage", "step": 1, "goal": "点就诊卡管理", "bbox": [869, 434, 1120, 523], "quality": "ok"}
 {"file": "images/031.jpg", "task_id": "hospital.deposit", "step": 2, "goal": "点押金预交", "bbox": [92, 1713, 304, 1805], "quality": "ok"}
@@ -145,7 +145,7 @@
 {"file": "images/033.jpg", "task_id": "hospital.pick_morning", "step": 1, "goal": "选上午", "bbox": [82, 1125, 223, 1238], "quality": "ok"}
 {"file": "images/036.jpg", "task_id": "gov.social_scan", "step": 1, "goal": "点扫一扫", "bbox": [69, 415, 244, 520], "quality": "ok"}
 {"file": "images/036.jpg", "task_id": "gov.family_service", "step": 1, "goal": "帮我儿子也弄一下", "bbox": [683, 421, 891, 514], "quality": "ok"}
-{"file": "images/036.jpg", "goal": "点长辈版", "bbox": [1017, 416, 1190, 517], "quality": "ok"}
+{"file": "images/036.jpg", "task_id": "gov.elder_mode", "step": 2, "goal": "点长辈版", "bbox": [1017, 416, 1190, 517], "quality": "ok"}
 {"file": "images/036.jpg", "task_id": "gov.rights_query", "step": 1, "goal": "点个人社保权益单查询", "bbox": [83, 2035, 500, 2132], "quality": "ok"}
 {"file": "images/036.jpg", "task_id": "gov.pension", "step": 1, "goal": "退休金那个", "bbox": [371, 1244, 594, 1348], "quality": "ok"}
 {"file": "images/036.jpg", "task_id": "gov.social_card_service", "step": 1, "goal": "点社保卡服务", "bbox": [641, 1250, 906, 1342], "quality": "ok"}
@@ -156,7 +156,7 @@
 {"file": "images/038.jpg", "task_id": "hospital.enter_other", "step": 1, "goal": "进陆丰市人民医院", "bbox": [200, 764, 610, 857], "quality": "ok"}
 {"file": "images/039.jpg", "task_id": "gov.enter_yueshengshi", "step": 1, "goal": "进粤省事", "bbox": [130, 946, 307, 1055], "quality": "ok"}
 {"file": "images/039.jpg", "task_id": "map.subway_qr", "step": 1, "goal": "进地铁站要刷的", "bbox": [677, 1634, 855, 1735], "quality": "ok"}
-{"file": "images/048.jpg", "goal": "点关怀版", "bbox": [992, 186, 1184, 412], "quality": "ok"}
+{"file": "images/048.jpg", "task_id": "gov.elder_mode", "step": 3, "goal": "点关怀版", "bbox": [992, 186, 1184, 412], "quality": "ok"}
 {"file": "images/048.jpg", "task_id": "gov.health_code", "step": 2, "goal": "点粤省事码", "bbox": [39, 180, 276, 407], "quality": "ok"}
 {"file": "images/048.jpg", "task_id": "gov.digital_space", "step": 2, "goal": "点数字空间", "bbox": [352, 183, 594, 407], "quality": "ok"}
 {"file": "images/048.jpg", "task_id": "gov.promo", "step": 1, "goal": "点马上看看", "bbox": [447, 1493, 814, 1657], "quality": "ok"}
