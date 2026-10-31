@@ -94,6 +94,9 @@ def main(argv=None) -> int:
     ap.add_argument("--top-k", type=int, default=5)
     ap.add_argument("--ablation", action="store_true", help="跑消融三档对比")
     ap.add_argument("--verbose", action="store_true", help="打印未命中明细")
+    ap.add_argument("--mode", default="hybrid",
+                    choices=["lexical", "hybrid", "hybrid_rerank"],
+                    help="单模式评测时用哪一档（默认 hybrid，即线上实际配置）")
     args = ap.parse_args(argv)
 
     if not args.data.exists():
@@ -126,12 +129,12 @@ def main(argv=None) -> int:
 
     results: List[tuple] = []
 
-    ranks, misses = run_mode("lexical")
-    m = metrics(ranks)
-    results.append(("纯词面（基线）", m))
-    print_block("1. 纯词面召回 lexical", m, ranks, misses, args.verbose)
-
     if args.ablation:
+        ranks, misses = run_mode("lexical")
+        m = metrics(ranks)
+        results.append(("纯词面（基线）", m))
+        print_block("1. 纯词面召回 lexical", m, ranks, misses, args.verbose)
+
         ranks2, misses2 = run_mode("hybrid")
         m2 = metrics(ranks2)
         results.append(("+ 向量召回 + RRF", m2))
@@ -160,10 +163,15 @@ def main(argv=None) -> int:
                   + f"{mm['Recall@5'] * 100:>11.1f}%"
                   + f"{mm['MRR']:>12.3f}")
         print()
-        print(f"评测集规模：{len(rows)} 条（data/rag/retrieval_eval.jsonl）")
+        print(f"评测集规模：{len(rows)} 条（{args.data.name}）")
         best = max((mm.get("Recall@5", 0) for _, mm in results), default=0)
     else:
-        best = metrics(ranks).get("Recall@5", 0)
+        # 单模式：默认跑 hybrid（线上实际用的档位），可用 --mode 指定
+        ranks, misses = run_mode(args.mode)
+        m = metrics(ranks)
+        results.append((args.mode, m))
+        print_block(f"{args.mode}", m, ranks, misses, args.verbose)
+        best = m.get("Recall@5", 0)
 
     print()
     print(f"判定：Recall@5 = {best * 100:.1f}%（目标 ≥ 90%）",

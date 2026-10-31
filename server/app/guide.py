@@ -236,14 +236,19 @@ def _index_text(path: Dict[str, Any]) -> str:
         parts.append(name)
 
     # aliases 里有大量模板产物（"怎么X"/"我要X"/"帮我X"），
-    # 清洗时直接剔掉，避免稀释语义
+    # 清洗时直接剔掉，避免稀释语义。
+    # 判定：去掉 2 字前缀后，剩下的部分与原 alias 不同（说明确实带模板前缀）。
+    # 注意：早先写成 `a[2:] in (name, a[2:])`，后半段恒真导致条件永远成立，
+    #       虽然行为碰巧对，但意图与实现不符，已改为显式判断。
     for alias in path.get("aliases") or []:
         a = str(alias).strip()
         if not a:
             continue
-        if a.startswith(("怎么", "我要", "帮我")) and a[2:] in (name, a[2:]):
-            continue
-        if a in parts:
+        for prefix in ("怎么", "我要", "帮我"):
+            if a.startswith(prefix) and len(a) > len(prefix):
+                a = a[len(prefix):]
+                break
+        if not a or a in parts:
             continue
         parts.append(a)
 
@@ -390,6 +395,21 @@ def _rrf_fuse(
     return sorted(scores.items(), key=lambda kv: kv[1], reverse=True)
 
 
+def _shares_token(query_n: str, path: Dict[str, Any]) -> bool:
+    """query 与候选文本是否有可解释的字面交集。
+
+    域外拒识的第二判据。单靠向量阈值分不开域内/域外——
+    「我要打游戏」→ map.taxi 的相似度 0.524，而正确的
+    「给孙子点零花钱」→ 红包 只有 0.535，差 0.011。
+    加这条要求「至少共享一个二字组，或关键词出现在候选文本里」，
+    把「语义勉强沾边、字面毫无关系」的误召挡掉。
+    """
+    haystack = _index_text(path)
+    if _bigrams(query_n) & _bigrams(haystack):
+        return True
+    return any(len(v) >= 2 and v in haystack for v in _expand(query_n))
+
+
 def search(query: str, top_k: int = 3, min_score: float = 0.42) -> List[Dict[str, Any]]:
     """按口语查询检索任务路径。
 
@@ -431,18 +451,54 @@ def search(query: str, top_k: int = 3, min_score: float = 0.42) -> List[Dict[str
     lexical_top = [(i, s) for i, s in lexical_all[:30] if s >= min_score]
     vector_top = index.search(query, top_k=30)
 
+    # 域外拒识（2026-11-01 修，三轮）
+    # ------------------------------------------------------------------
+    # 第一轮：只加「向量相似度 >= 0.45」。实测不够——bge-small-zh 对中文
+    #   短句的区分度偏低：「我要打游戏」→ map.taxi 0.524（域外），
+    #   而正确的「给孙子点零花钱」→ 红包只有 0.535，差 0.011。
+    #
+    # 第二轮：加「字面必须有交集」当**硬门槛**。结果砍掉 14 条正确答案——
+    #   「给他转点钱」→ 转账 0.770、「我想约个检查身体的」→ 体检预约 0.765，
+    #   语义极强但字面确实不沾边。**硬门槛思路是错的。**
+    #
+    # 第三轮（当前）：改成**绝对阈值 + 相对领先**双条件，
+    #   不再要求字面交集：
+    #     1) 最高向量相似度 >= _VECTOR_MIN（默认 0.55）——「这话至少像」
+    #     2) top1 与 top5 的分差 >= _VECTOR_GAP（默认 0.05）——「它有明显偏好」
+    #   域外查询的问题不是分数低，而是**分数平**：一堆 0.41–0.53 挤在一起，
+    #   说明模型对这句话没有任何偏好，那就该拒识。
+    #   域内查询通常 top1 明显领先。
+    _VECTOR_MIN = float(os.getenv("NEXTTAP_VECTOR_MIN", "0.55"))
+    _VECTOR_GAP = float(os.getenv("NEXTTAP_VECTOR_GAP", "0.02"))
+
+    if vector_top:
+        top_sim = vector_top[0][1]
+        fifth = vector_top[min(4, len(vector_top) - 1)][1]
+        confident = top_sim >= _VECTOR_MIN and (top_sim - fifth) >= _VECTOR_GAP
+    else:
+        confident = False
+
+    strong_lexical = {idx for idx, _s in lexical_top}
     fused = _rrf_fuse(lexical_top, vector_top)
-    if not fused:
+
+    kept: List[Tuple[int, float]] = []
+    for idx, score in fused:
+        if idx in strong_lexical:
+            kept.append((idx, score))
+            continue
+        # 纯向量命中：只有在整体「有把握」时才接受
+        if confident:
+            kept.append((idx, score))
+
+    if not kept:
         return []
 
     if mode == "hybrid_rerank":
         # 先取 RRF 的前 20 做 rerank，再截 top_k。
         # 全量 120 条都 rerank 太慢，前 20 足够覆盖正确答案。
-        fused = _rerank(query, fused[:20], paths)
+        kept = _rerank(query, kept[:20], paths)
 
-    # hybrid 模式不再用 min_score 过滤（RRF 分数量纲不同），
-    # 改为「只保留两路里至少出现过一次的」
-    return _to_results(fused[: max(1, top_k)], paths)
+    return _to_results(kept[: max(1, top_k)], paths)
 
 
 def _to_results(ranked: Sequence[Tuple[int, float]], paths: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
