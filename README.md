@@ -79,20 +79,26 @@ python tests/test_candidates.py
 
 ---
 
-## 评测流程（gate：hit@1 ≥ 85%，50 张）
+## 评测流程（gate：hit@1 ≥ 85%，47 张图 / 164 用例）
 
 ```bash
-# 1. 把 50 张截图放进 data/eval/images/
+# 1. 截图放在 data/eval/images/（47 张已脱敏，已入库）
 # 2. 拖框标注真值
 python tools/annotate.py
 
-# 3. 后端起来后，批量跑
-python tools/run_eval.py --limit 5     # 先试 5 张
-python tools/run_eval.py               # 跑全量
+# 3. 数据自检（改完任何东西先跑）
+python tools/selfcheck.py
 
-# 4. 出数字
+# 4. 后端起来后，批量跑
+python tools/run_eval.py --limit 5     # 先试 5 条
+python tools/run_eval.py               # 跑全量，约 8–9 分钟
+
+# 5. 出数字
 python tools/eval.py --ci
 ```
+
+> 改了 goal 就必须重跑模型，否则 `pred.jsonl` 全部失配。
+> 完整流程见 `docs/交接文档.md` §十三。
 
 **命中判定**（对应定稿 D9）：预测框中心点落在真值框内即算 hit。
 
