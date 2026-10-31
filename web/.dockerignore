@@ -1,0 +1,8 @@
+# 构建上下文瘦身：不把这些拷进镜像，构建快一个数量级
+node_modules
+dist
+.git
+.gitignore
+*.log
+.vscode
+.idea

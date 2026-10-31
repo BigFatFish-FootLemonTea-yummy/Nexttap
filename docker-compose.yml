@@ -1,13 +1,44 @@
+# NextTap 单机部署：web（Nginx 静态 + 反代） + api（FastAPI + OCR）
+#
+# 启动：docker compose up -d --build
+# 访问：http://<服务器IP>/
+#
+# 内存预算（2C4G 机器）：
+#   api  ≈ 600–900MB（RapidOCR + onnxruntime，预热后稳定）
+#   web  ≈ 10MB
+#   系统 ≈ 500MB
+#   留 2GB 余量，避免 OCR 峰值把系统拖死
+
 services:
   api:
     build: ./server
     container_name: nexttap-api
     env_file:
       - .env
-    ports:
-      - "8000:8000"
+    # 不对外暴露端口：只能通过 web 的 Nginx 反代访问，
+    # 避免 8000 直接暴露到公网被刷
+    expose:
+      - "8000"
     volumes:
+      # 截图按天落盘，容器重启不丢
       - ./server/data:/app/data
     restart: unless-stopped
-    # 2C4G 机器上限制内存，避免 OCR 峰值把系统拖死
     mem_limit: 1500m
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      # 给 OCR 预热留时间，别一启动就判死
+      start_period: 60s
+
+  web:
+    build: ./web
+    container_name: nexttap-web
+    ports:
+      - "80:80"
+    depends_on:
+      api:
+        condition: service_started
+    restart: unless-stopped
+    mem_limit: 128m

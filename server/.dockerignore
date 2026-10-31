@@ -1,0 +1,14 @@
+# 构建上下文瘦身
+#
+# Dockerfile 只 COPY app 和 requirements.txt，
+# 但默认整个 server/ 目录都会作为构建上下文发给 daemon，
+# 截图数据可能几十 MB，拖慢构建。
+data
+tests
+__pycache__
+*.pyc
+*.pyo
+.venv
+venv
+*.log
+.env
