@@ -1,0 +1,175 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""检索评测：Recall@K + MRR + 消融对比。
+
+指标口径（与定位评测分开，不要混报）：
+    Recall@K  正确答案出现在前 K 条里的比例
+    MRR       平均倒数排名（正确答案排第 1 = 1.0，排第 3 = 0.33）
+
+用法：
+    # 单次
+    python tools/eval_retrieval.py
+
+    # 消融表（技术文档要放这张）
+    python tools/eval_retrieval.py --ablation
+
+消融三档（对应交接文档 §十二）：
+    1. lexical    纯词面召回（现状）
+    2. +vector    RRF 融合词面与向量
+    3. +rerank    再叠一层 rerank
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+from typing import Any, Callable, Dict, List
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "server"))
+
+DEFAULT_EVAL = ROOT / "data" / "rag" / "retrieval_eval.jsonl"
+
+
+def load_eval(path: Path) -> List[Dict[str, Any]]:
+    rows = []
+    with path.open("r", encoding="utf-8-sig") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                rows.append(json.loads(line))
+    return rows
+
+
+def metrics(ranks: List[int], ks=(1, 3, 5)) -> Dict[str, float]:
+    """ranks: 每条 query 正确答案的排名（1-based），未命中记为 0。"""
+    n = len(ranks)
+    if not n:
+        return {}
+    out: Dict[str, float] = {}
+    for k in ks:
+        out[f"Recall@{k}"] = sum(1 for r in ranks if 0 < r <= k) / n
+    out["MRR"] = sum(1.0 / r for r in ranks if r > 0) / n
+    out["Miss"] = sum(1 for r in ranks if r == 0) / n
+    return out
+
+
+def run(searcher: Callable[[str, int], List[Dict[str, Any]]], rows, top_k: int = 5):
+    ranks: List[int] = []
+    misses: List[Dict[str, Any]] = []
+    for row in rows:
+        hits = searcher(row["query"], top_k)
+        ids = [h.get("task_id") for h in hits]
+        try:
+            rank = ids.index(row["task_id"]) + 1
+        except ValueError:
+            rank = 0
+            misses.append({
+                "query": row["query"],
+                "want": row["task_id"],
+                "got": ids[:3],
+            })
+        ranks.append(rank)
+    return ranks, misses
+
+
+def print_block(title: str, m: Dict[str, float], ranks: List[int], misses, verbose: bool):
+    print(f"  {title}")
+    if not m:
+        print("    （无数据）")
+        return
+    print("    " + "  ".join(f"{k}={v * 100:.1f}%" if k != "MRR" else f"MRR={v:.3f}"
+                             for k, v in m.items()))
+    if verbose and misses:
+        print(f"    未命中 {len(misses)} 条：")
+        for mm in misses:
+            print(f"      {mm['query']!r}  want={mm['want']}  got={mm['got']}")
+
+
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(description="检索评测：Recall@K / MRR / 消融")
+    ap.add_argument("--data", type=Path, default=DEFAULT_EVAL)
+    ap.add_argument("--top-k", type=int, default=5)
+    ap.add_argument("--ablation", action="store_true", help="跑消融三档对比")
+    ap.add_argument("--verbose", action="store_true", help="打印未命中明细")
+    args = ap.parse_args(argv)
+
+    if not args.data.exists():
+        print(f"[FATAL] 评测集不存在：{args.data}")
+        print("        先跑 python tools/build_retrieval_eval.py")
+        return 2
+
+    rows = load_eval(args.data)
+    print("=" * 70)
+    print(f"检索评测：{len(rows)} 条 query  →  {args.data.name}")
+    print("=" * 70)
+    print()
+
+    from app import guide
+
+    def run_mode(mode: str):
+        """切到指定检索档位跑一轮。
+
+        注意：模式是 guide 每次调用时读环境变量决定的，
+        所以这里改环境变量 + reset_index() 就够了，不用重新 import。
+        """
+        import os
+
+        os.environ["NEXTTAP_RETRIEVAL"] = mode
+        guide.reset_index()
+        return run(lexical, rows, args.top_k)
+
+    def lexical(query: str, k: int):
+        return guide.search(query, top_k=k)
+
+    results: List[tuple] = []
+
+    ranks, misses = run_mode("lexical")
+    m = metrics(ranks)
+    results.append(("纯词面（基线）", m))
+    print_block("1. 纯词面召回 lexical", m, ranks, misses, args.verbose)
+
+    if args.ablation:
+        ranks2, misses2 = run_mode("hybrid")
+        m2 = metrics(ranks2)
+        results.append(("+ 向量召回 + RRF", m2))
+        print()
+        print_block("2. 词面 + 向量 + RRF 融合 hybrid", m2, ranks2, misses2, args.verbose)
+
+        ranks3, misses3 = run_mode("hybrid_rerank")
+        m3 = metrics(ranks3)
+        results.append(("+ rerank", m3))
+        print()
+        print_block("3. 再叠 rerank", m3, ranks3, misses3, args.verbose)
+
+        print()
+        print("=" * 70)
+        print("消融表（技术文档可直接引用）")
+        print("=" * 70)
+        header = f"{'配置':<24}" + "".join(f"{k:>12}" for k in ("Recall@1", "Recall@3", "Recall@5", "MRR"))
+        print(header)
+        print("-" * len(header))
+        for name, mm in results:
+            if not mm:
+                continue
+            print(f"{name:<24}"
+                  + f"{mm['Recall@1'] * 100:>11.1f}%"
+                  + f"{mm['Recall@3'] * 100:>11.1f}%"
+                  + f"{mm['Recall@5'] * 100:>11.1f}%"
+                  + f"{mm['MRR']:>12.3f}")
+        print()
+        print(f"评测集规模：{len(rows)} 条（data/rag/retrieval_eval.jsonl）")
+        best = max((mm.get("Recall@5", 0) for _, mm in results), default=0)
+    else:
+        best = metrics(ranks).get("Recall@5", 0)
+
+    print()
+    print(f"判定：Recall@5 = {best * 100:.1f}%（目标 ≥ 90%）",
+          "PASS" if best >= 0.9 else "FAIL")
+    return 0 if best >= 0.9 else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

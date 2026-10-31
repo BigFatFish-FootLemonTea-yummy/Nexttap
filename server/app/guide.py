@@ -5,20 +5,41 @@
 
 数据来源：data/rag/paths.jsonl（120 条任务链）。
 
-关于检索质量：这是 RAG 的第一层（词面召回）。中文短句天然稀疏，
-"退休金"和"养老金"一个字都不重合，所以这里做了两件事——
-去掉口语填充词、按小词典做同义扩展。它不追求语义理解，
-只是把候选收敛到 3 条，真正的语义判断交给后面的模型。
+## 检索分三层（技术文档 §6.3 的三阶检索）
+
+1. **词面召回**（本文件 `_score`）
+   去口语填充词 + 同义扩展 + 二字组重合度。
+   优点：零依赖、毫秒级、可解释。
+   缺点：中文短句天然稀疏——"退休金"和"养老金"一个字都不重合，
+         "交税那个"和"粤税通"更是毫无字面关联。
+
+2. **向量召回**（`_vector_index`）
+   bge-small-zh-v1.5（512 维，ONNX，约 90MB）。
+   对 `name + aliases + steps[].target` 建索引，查询时算余弦相似度。
+   补上词面的语义盲区。
+
+3. **RRF 融合**（`_rrf_fuse`）
+   Reciprocal Rank Fusion：`score(d) = Σ w_i / (k + rank_i(d))`。
+   为什么不用分数加权：词面是 0–1 相似度、向量是余弦距离，量纲不同，
+   直接加权要归一化且权重难调；RRF 只看排名，无需调参，实践中更稳。
+
+通过环境变量 `NEXTTAP_RETRIEVAL` 切换，便于跑消融表：
+    lexical         只走词面（兜底，无 embedding 依赖时自动退化到这个）
+    hybrid          词面 + 向量 + RRF（默认）
+    hybrid_rerank   再叠一层 rerank
+
+`search()` 的返回结构**不可变**，MCP 的 search_guide 依赖它。
 """
 
 from __future__ import annotations
 
 import json
+import math
 import os
 import re
 from difflib import SequenceMatcher
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 _CANDIDATE_FILES = [
     os.getenv("NEXTTAP_PATHS", ""),
@@ -50,9 +71,37 @@ _SYNONYMS = {
     "叫车": ("打车",),
     "叫个车": ("打车",),
     "零钱": ("钱包", "余额"),
+    # 2026-11-01 补充：来自检索评测集里词面完全失效的样本
+    "交税": ("粤税通", "税务"),
+    "报税": ("粤税通", "税务"),
+    "打疫苗": ("预防接种",),
+    "水电费": ("生活缴费",),
+    "话费": ("生活缴费",),
+    "律师": ("法律服务",),
+    "补助": ("社会救助", "救助"),
+    "残疾": ("助残",),
+    "护照": ("出入境",),
+    "驾照": ("行驶驾驶", "驾驶证"),
+    "换证": ("行驶驾驶", "驾驶证"),
+    "公积金": ("公积金", "住房"),
+    "住院": ("住院", "押金"),
+    "化验": ("检验检查",),
+    "体检": ("体检",),
+    "大夫": ("医生",),
+    "护士": ("护理",),
+    "红包": ("红包",),
+    "零花": ("红包",),
+    "说话": ("语音通话", "视频通话"),
+    "打字": ("语音输入",),
+    "在哪儿": ("位置",),
+    "政务": ("粤省事", "穗好办"),
 }
 
+# 默认检索模式；embedding 不可用时自动退化为 lexical
+_DEFAULT_MODE = "hybrid"
+
 _cache: Optional[List[Dict[str, Any]]] = None
+_vector_index: Optional["_VectorIndex"] = None
 
 
 def _paths_file() -> Optional[Path]:
@@ -81,6 +130,16 @@ def load_paths() -> List[Dict[str, Any]]:
                     continue
             _cache = rows
     return _cache
+
+
+def reset_index() -> None:
+    """丢掉缓存的向量索引（改数据或切模式后用）。"""
+    global _vector_index
+    _vector_index = None
+
+
+def _mode() -> str:
+    return os.getenv("NEXTTAP_RETRIEVAL", _DEFAULT_MODE).strip().lower() or _DEFAULT_MODE
 
 
 def _norm(text: str) -> str:
@@ -158,31 +217,243 @@ def _score(query: str, path: Dict[str, Any]) -> float:
     return best
 
 
+# ---------------------------------------------------------------------------
+# 向量召回
+# ---------------------------------------------------------------------------
+
+_MODEL_NAME = os.getenv("NEXTTAP_EMBED_MODEL", "BAAI/bge-small-zh-v1.5")
+
+
+def _index_text(path: Dict[str, Any]) -> str:
+    """一条任务链用于建索引的文本。
+
+    把 name、去模板后的 aliases、各步 target 拼在一起，
+    让向量同时看到「任务叫什么」和「中间要点哪些按钮」。
+    """
+    parts: List[str] = []
+    name = str(path.get("name") or "").strip()
+    if name:
+        parts.append(name)
+
+    # aliases 里有大量模板产物（"怎么X"/"我要X"/"帮我X"），
+    # 清洗时直接剔掉，避免稀释语义
+    for alias in path.get("aliases") or []:
+        a = str(alias).strip()
+        if not a:
+            continue
+        if a.startswith(("怎么", "我要", "帮我")) and a[2:] in (name, a[2:]):
+            continue
+        if a in parts:
+            continue
+        parts.append(a)
+
+    for step in path.get("steps") or []:
+        target = str(step.get("target") or "").strip()
+        if target and target not in parts:
+            parts.append(target)
+
+    return "，".join(parts)
+
+
+class _VectorIndex:
+    """bge-small-zh 向量索引。
+
+    懒加载：只有在 hybrid 模式下、且真正被调用时才加载模型。
+    模型或依赖缺失时静默降级为纯词面，不影响主流程。
+    """
+
+    def __init__(self) -> None:
+        self.ok = False
+        self.paths: List[Dict[str, Any]] = []
+        self.matrix: Any = None  # numpy (N, D)，已 L2 归一化
+        self._model: Any = None
+        self._load()
+
+    def _load(self) -> None:
+        try:
+            from fastembed import TextEmbedding
+            import numpy as np
+        except ImportError:
+            return
+
+        self.paths = load_paths()
+        if not self.paths:
+            return
+
+        try:
+            self._model = TextEmbedding(
+                model_name=_MODEL_NAME,
+                providers=["CPUExecutionProvider"],
+                # 静默下载，别把进度条刷进日志
+                threads=2,
+            )
+            texts = [_index_text(p) for p in self.paths]
+            vecs = np.array(list(self._model.embed(texts)), dtype="float32")
+        except Exception:
+            self._model = None
+            return
+
+        norms = np.linalg.norm(vecs, axis=1, keepdims=True)
+        norms[norms == 0] = 1.0
+        self.matrix = vecs / norms
+        self.ok = True
+
+    def search(self, query: str, top_k: int) -> List[Tuple[int, float]]:
+        """返回 [(路径下标, 相似度)]，按相似度降序。"""
+        if not self.ok or self.matrix is None:
+            return []
+        import numpy as np
+
+        q = np.array(list(self._model.embed([query])), dtype="float32")[0]
+        n = float(np.linalg.norm(q)) or 1.0
+        sims = self.matrix @ (q / n)
+        order = np.argsort(-sims)[:top_k]
+        return [(int(i), float(sims[i])) for i in order]
+
+
+def _get_index() -> Optional[_VectorIndex]:
+    global _vector_index
+    if _mode() == "lexical":
+        return None
+    if _vector_index is None:
+        _vector_index = _VectorIndex()
+    return _vector_index if _vector_index.ok else None
+
+
+# ---------------------------------------------------------------------------
+# rerank：交叉编码器重排
+# ---------------------------------------------------------------------------
+
+_reranker: Any = None
+_RERANK_MODEL = os.getenv("NEXTTAP_RERANK_MODEL", "BAAI/bge-reranker-base")
+
+
+def _get_reranker() -> Any:
+    """懒加载交叉编码器。
+
+    2C4G 上这个模型约 1.1GB（onnx），会和 OCR 抢内存，
+    所以**线上默认不启用**（评审意见 §三.3：「线上不跑 rerank，
+    只在离线做消融表」），只有 `NEXTTAP_RETRIEVAL=hybrid_rerank` 时才加载。
+    """
+    global _reranker
+    if _reranker is None:
+        try:
+            from fastembed.rerank.cross_encoder import TextCrossEncoder
+        except ImportError:
+            _reranker = False
+            return False
+        try:
+            _reranker = TextCrossEncoder(model_name=_RERANK_MODEL)
+        except Exception:
+            _reranker = False
+    return _reranker
+
+
+def _rerank(query: str, candidates: Sequence[Tuple[int, float]], paths: List[Dict[str, Any]]) -> List[Tuple[int, float]]:
+    """用交叉编码器对候选重排；模型不可用时原样返回。"""
+    model = _get_reranker()
+    if not model or not candidates:
+        return list(candidates)
+
+    docs = [_index_text(paths[idx]) for idx, _ in candidates]
+    try:
+        scores = list(model.rerank(query, docs))
+    except Exception:
+        return list(candidates)
+
+    reranked = sorted(
+        zip((idx for idx, _ in candidates), scores),
+        key=lambda kv: float(kv[1]),
+        reverse=True,
+    )
+    return [(idx, float(s)) for idx, s in reranked]
+
+
+def _rrf_fuse(
+    lexical: Sequence[Tuple[int, float]],
+    vector: Sequence[Tuple[int, float]],
+    k: int = 60,
+    w_lexical: float = 1.0,
+    w_vector: float = 1.0,
+) -> List[Tuple[int, float]]:
+    """Reciprocal Rank Fusion。
+
+    只用排名不用分数，所以两路量纲不同也没关系——这是选 RRF 而不是
+    加权平均的主要原因（词面 0–1 相似度 vs 向量余弦，归一化后权重仍难调）。
+    k=60 是 RRF 论文的常用取值，作用是压平头部差异，避免第一名一家独大。
+    """
+    scores: Dict[int, float] = {}
+    for rank, (idx, _s) in enumerate(lexical, start=1):
+        scores[idx] = scores.get(idx, 0.0) + w_lexical / (k + rank)
+    for rank, (idx, _s) in enumerate(vector, start=1):
+        scores[idx] = scores.get(idx, 0.0) + w_vector / (k + rank)
+    return sorted(scores.items(), key=lambda kv: kv[1], reverse=True)
+
+
 def search(query: str, top_k: int = 3, min_score: float = 0.42) -> List[Dict[str, Any]]:
     """按口语查询检索任务路径。
 
-    词面召回的定位是「把候选收敛到 3 条」，不负责语义判断。
-    以后接向量检索与 rerank，只需替换本函数内部排序，上层无感。
+    三阶检索的入口。`NEXTTAP_RETRIEVAL` 控制走哪一阶：
+        lexical        纯词面（无 embedding 依赖）
+        hybrid         词面 + 向量 + RRF（默认）
+        hybrid_rerank  在 hybrid 基础上再 rerank
+
+    **返回结构不可变**：MCP 的 search_guide 与后续 HTTP 接口都依赖它。
     """
     query_n = _clean(query)
     if not query_n:
         return []
 
-    scored = []
-    for path in load_paths():
-        score = _score(query, path)
-        if score >= min_score:
-            scored.append((score, path))
+    paths = load_paths()
+    if not paths:
+        return []
 
-    scored.sort(key=lambda item: item[0], reverse=True)
+    mode = _mode()
 
+    # 第一阶：词面，全量打分（120 条，很快）
+    lexical_all = sorted(
+        ((i, _score(query, p)) for i, p in enumerate(paths)),
+        key=lambda kv: kv[1],
+        reverse=True,
+    )
+
+    if mode == "lexical":
+        ranked = [(i, s) for i, s in lexical_all if s >= min_score]
+        return _to_results(ranked[: max(1, top_k)], paths)
+
+    index = _get_index()
+    if index is None:
+        # 模型/依赖缺失，静默降级为词面
+        ranked = [(i, s) for i, s in lexical_all if s >= min_score]
+        return _to_results(ranked[: max(1, top_k)], paths)
+
+    # 词面只取前 N 参与融合；低于阈值的说明字面完全不沾边，留着只会稀释
+    lexical_top = [(i, s) for i, s in lexical_all[:30] if s >= min_score]
+    vector_top = index.search(query, top_k=30)
+
+    fused = _rrf_fuse(lexical_top, vector_top)
+    if not fused:
+        return []
+
+    if mode == "hybrid_rerank":
+        # 先取 RRF 的前 20 做 rerank，再截 top_k。
+        # 全量 120 条都 rerank 太慢，前 20 足够覆盖正确答案。
+        fused = _rerank(query, fused[:20], paths)
+
+    # hybrid 模式不再用 min_score 过滤（RRF 分数量纲不同），
+    # 改为「只保留两路里至少出现过一次的」
+    return _to_results(fused[: max(1, top_k)], paths)
+
+
+def _to_results(ranked: Sequence[Tuple[int, float]], paths: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     results: List[Dict[str, Any]] = []
-    for score, path in scored[: max(1, top_k)]:
+    for idx, score in ranked:
+        path = paths[idx]
         results.append({
             "task_id": path.get("task_id", ""),
             "name": path.get("name", ""),
             "app": path.get("app", ""),
-            "score": round(score, 3),
+            "score": round(float(score), 3),
             "steps": path.get("steps") or [],
         })
     return results
