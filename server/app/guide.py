@@ -34,7 +34,7 @@
 from __future__ import annotations
 
 import json
-import math
+import logging
 import os
 import re
 from difflib import SequenceMatcher
@@ -102,6 +102,9 @@ _DEFAULT_MODE = "hybrid"
 
 _cache: Optional[List[Dict[str, Any]]] = None
 _vector_index: Optional["_VectorIndex"] = None
+_reranker: Any = None
+
+_log = logging.getLogger("nexttap.guide")
 
 
 def _paths_file() -> Optional[Path]:
@@ -117,6 +120,13 @@ def load_paths() -> List[Dict[str, Any]]:
     if _cache is None:
         path = _paths_file()
         if path is None:
+            # 找不到数据不是"正常降级"，而是部署出错：
+            # 容器里忘了挂载 data/rag 时，检索会静默失效（search 恒返回 []），
+            # 没有任何报错，极难排查。所以这里必须吵一次。
+            _log.error(
+                "找不到 paths.jsonl，检索功能将完全失效。已尝试：%s",
+                [c for c in _CANDIDATE_FILES if c],
+            )
             _cache = []
         else:
             rows: List[Dict[str, Any]] = []
@@ -129,13 +139,21 @@ def load_paths() -> List[Dict[str, Any]]:
                 except json.JSONDecodeError:
                     continue
             _cache = rows
+            _log.info("已加载 %d 条任务链：%s", len(rows), path)
     return _cache
 
 
 def reset_index() -> None:
-    """丢掉缓存的向量索引（改数据或切模式后用）。"""
-    global _vector_index
+    """丢掉所有缓存：任务链、向量索引、reranker。
+
+    早先只清 _vector_index，导致：
+      - 数据文件改了不重读（_cache 还在）
+      - reranker 占的 1.1GB 不释放（对 mem_limit 1500m 是隐患）
+    """
+    global _vector_index, _cache, _reranker
     _vector_index = None
+    _cache = None
+    _reranker = None
 
 
 def _mode() -> str:
@@ -275,10 +293,14 @@ class _VectorIndex:
         self._load()
 
     def _load(self) -> None:
+        # 只 catch ImportError 是不够的：fastembed 装坏（缺 dll、版本冲突）
+        # 会抛 RuntimeError/OSError，穿透出去会让整个服务起不来。
+        # 降级路径的契约是「任何失败都不影响主流程」，所以这里全 catch。
         try:
             from fastembed import TextEmbedding
             import numpy as np
-        except ImportError:
+        except Exception as exc:  # noqa: BLE001
+            _log.warning("fastembed 不可用，检索降级为纯词面：%s", exc)
             return
 
         self.paths = load_paths()
@@ -294,26 +316,53 @@ class _VectorIndex:
             )
             texts = [_index_text(p) for p in self.paths]
             vecs = np.array(list(self._model.embed(texts)), dtype="float32")
-        except Exception:
+        except Exception as exc:  # noqa: BLE001
+            # 常见于：国内拉 HF 超时、模型文件损坏、onnxruntime 加载失败
+            _log.warning("embedding 模型加载失败，检索降级为纯词面：%s", exc)
             self._model = None
             return
 
-        norms = np.linalg.norm(vecs, axis=1, keepdims=True)
-        norms[norms == 0] = 1.0
-        self.matrix = vecs / norms
+        # 行数与路径数必须对齐，否则错位一行会静默返回完全无关的 task_id，
+        # 而且分数看起来完全正常——这种 bug 极难发现。
+        if vecs.ndim != 2 or vecs.shape[0] != len(self.paths):
+            _log.error(
+                "向量矩阵形状异常：%s，期望 (%d, D)。降级为纯词面。",
+                None if vecs is None else vecs.shape, len(self.paths),
+            )
+            self._model = None
+            return
+
+        # 归一化原来写在 try 外面：embed 返回空数组时 np.linalg.norm 会抛
+        # AxisError 穿透出去。现在整段都在 try 内。
+        try:
+            norms = np.linalg.norm(vecs, axis=1, keepdims=True)
+            norms[norms == 0] = 1.0
+            self.matrix = vecs / norms
+        except Exception as exc:  # noqa: BLE001
+            _log.error("向量归一化失败，降级为纯词面：%s", exc)
+            self._model = None
+            return
+
         self.ok = True
 
     def search(self, query: str, top_k: int) -> List[Tuple[int, float]]:
-        """返回 [(路径下标, 相似度)]，按相似度降序。"""
+        """返回 [(路径下标, 相似度)]，按相似度降序。
+
+        任何异常都返回 []，让调用方退回词面，绝不让检索拖垮整个请求。
+        """
         if not self.ok or self.matrix is None:
             return []
-        import numpy as np
+        try:
+            import numpy as np
 
-        q = np.array(list(self._model.embed([query])), dtype="float32")[0]
-        n = float(np.linalg.norm(q)) or 1.0
-        sims = self.matrix @ (q / n)
-        order = np.argsort(-sims)[:top_k]
-        return [(int(i), float(sims[i])) for i in order]
+            q = np.array(list(self._model.embed([query])), dtype="float32")[0]
+            n = float(np.linalg.norm(q)) or 1.0
+            sims = self.matrix @ (q / n)
+            order = np.argsort(-sims)[:top_k]
+            return [(int(i), float(sims[i])) for i in order]
+        except Exception as exc:  # noqa: BLE001
+            _log.warning("向量检索失败，本轮退回词面：%s", exc)
+            return []
 
 
 def _get_index() -> Optional[_VectorIndex]:
@@ -329,7 +378,7 @@ def _get_index() -> Optional[_VectorIndex]:
 # rerank：交叉编码器重排
 # ---------------------------------------------------------------------------
 
-_reranker: Any = None
+# _reranker 在文件顶部与其它缓存一起声明，避免重复定义
 _RERANK_MODEL = os.getenv("NEXTTAP_RERANK_MODEL", "BAAI/bge-reranker-base")
 
 
@@ -419,7 +468,26 @@ def search(query: str, top_k: int = 3, min_score: float = 0.42) -> List[Dict[str
         hybrid_rerank  在 hybrid 基础上再 rerank
 
     **返回结构不可变**：MCP 的 search_guide 与后续 HTTP 接口都依赖它。
+
+    关于 `score` 的量纲（重要）：
+        三档模式的 score 含义不同，调用方**不要跨档比较分数**——
+          lexical       0–1 的词面相似度
+          hybrid        RRF 融合分，范围约 0.016–0.033（不是相似度）
+          hybrid_rerank reranker 原始 logit，可能为负
+        只看排序，不要看绝对值。这也意味着 `min_score` 只在 lexical 档有意义。
     """
+    # 入参防护：hybrid 档下 query=None 会走到 _clean 里 re.sub 抛 TypeError，
+    # 而 lexical 档返回 []，行为不一致。统一在这里挡掉。
+    if not isinstance(query, str) or not query.strip():
+        return []
+    try:
+        top_k = int(top_k)
+    except (TypeError, ValueError):
+        top_k = 3
+    # max(1, top_k) 会让 top_k=0 返回 1 条，语义上 0 就该返回 0 条
+    if top_k <= 0:
+        return []
+
     query_n = _clean(query)
     if not query_n:
         return []
@@ -429,6 +497,10 @@ def search(query: str, top_k: int = 3, min_score: float = 0.42) -> List[Dict[str
         return []
 
     mode = _mode()
+    if mode not in ("lexical", "hybrid", "hybrid_rerank"):
+        # 未知取值原来静默当 hybrid 跑，导致 "hybrid-rerank"（拼错）不报错也不 rerank。
+        _log.warning("未知的 NEXTTAP_RETRIEVAL=%r，按 hybrid 处理", mode)
+        mode = "hybrid"
 
     # 第一阶：词面，全量打分（120 条，很快）
     lexical_all = sorted(
@@ -439,17 +511,20 @@ def search(query: str, top_k: int = 3, min_score: float = 0.42) -> List[Dict[str
 
     if mode == "lexical":
         ranked = [(i, s) for i, s in lexical_all if s >= min_score]
-        return _to_results(ranked[: max(1, top_k)], paths)
+        return _to_results(ranked[:top_k], paths)
 
     index = _get_index()
     if index is None:
         # 模型/依赖缺失，静默降级为词面
         ranked = [(i, s) for i, s in lexical_all if s >= min_score]
-        return _to_results(ranked[: max(1, top_k)], paths)
+        return _to_results(ranked[:top_k], paths)
 
-    # 词面只取前 N 参与融合；低于阈值的说明字面完全不沾边，留着只会稀释
-    lexical_top = [(i, s) for i, s in lexical_all[:30] if s >= min_score]
-    vector_top = index.search(query, top_k=30)
+    # 词面只取前 N 参与融合；低于阈值的说明字面完全不沾边，留着只会稀释。
+    # 这里的 30 是**融合候选池**的大小，不是最终 top_k——早先版本把 top_k
+    # 也截到 30，导致 search(q, top_k=50) 只返回 30 条。
+    _POOL = max(30, top_k)
+    lexical_top = [(i, s) for i, s in lexical_all[:_POOL] if s >= min_score]
+    vector_top = index.search(query, top_k=_POOL)
 
     # 域外拒识（2026-11-01 修，三轮）
     # ------------------------------------------------------------------
@@ -498,7 +573,7 @@ def search(query: str, top_k: int = 3, min_score: float = 0.42) -> List[Dict[str
         # 全量 120 条都 rerank 太慢，前 20 足够覆盖正确答案。
         kept = _rerank(query, kept[:20], paths)
 
-    return _to_results(kept[: max(1, top_k)], paths)
+    return _to_results(kept[:top_k], paths)
 
 
 def _to_results(ranked: Sequence[Tuple[int, float]], paths: List[Dict[str, Any]]) -> List[Dict[str, Any]]:

@@ -20,8 +20,15 @@ services:
     expose:
       - "8000"
     volumes:
-      # 截图按天落盘，容器重启不丢
-      - ./server/data:/app/data
+      # 截图按天落盘，容器重启不丢。
+      # 注意：只挂子目录，不要挂整个 /app/data——
+      # 否则会把下面 rag 的挂载点盖掉（Docker 挂载按路径覆盖）。
+      - ./server/data/screenshots:/app/data/screenshots
+      # 任务链数据（120 条 paths.jsonl）只读挂载。
+      # guide.py 找的是 <cwd>/data/rag/paths.jsonl，WORKDIR=/app，
+      # 所以挂到 /app/data/rag 正好命中。
+      # 不 COPY 进镜像的理由：数据会随访谈更新，打进镜像每次都要重建。
+      - ./data/rag:/app/data/rag:ro
     restart: unless-stopped
     mem_limit: 1500m
     healthcheck:
