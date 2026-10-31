@@ -112,5 +112,7 @@ python tools/eval.py --ci
 - [x] 后端骨架：上传 / 定位 / 健康检查
 - [x] 定位管线验证脚本（`tools/`）
 - [x] 定位准确率 gate：**hit@1 91.5%（150/164）**，95% 区间 [86.2%, 94.8%]；step=1 91.1%，整链 91.4%；时延 p50 3.8s / p90 4.8s
-- [ ] 前端：拍照上传 → 微调 → 全屏展示
-- [ ] 多步流程与 RAG 预热
+- [x] 前端：拍照上传 → 叠圈微调 → 全屏指路（含示例一键体验）
+- [x] MCP 服务：4 个工具（locate_element / search_guide / check_risk / compose_card）
+- [ ] RAG：目前只有词面召回（`server/app/guide.py`），向量 + rerank + 消融表待补
+- [ ] 多步流程预热（依赖 RAG）
