@@ -21,21 +21,33 @@
 .
 ├─ server/                 # FastAPI 后端
 │  ├─ app/
-│  │  ├─ main.py           # 入口
+│  │  ├─ main.py           # 入口（启动时预热 OCR + 检索模型）
 │  │  ├─ config.py         # 环境变量
 │  │  ├─ schemas.py        # 请求/响应模型
 │  │  ├─ vision/           # OCR 与候选构建
 │  │  ├─ llm/              # 目标选择
+│  │  ├─ guide.py          # 三阶检索 + 风险判断 + 卡片组装
+│  │  ├─ mcp_server.py     # MCP 服务，4 个工具
 │  │  └─ api/              # 路由
 │  ├─ tests/               # 纯逻辑单测（不需要 OCR / LLM）
+│  ├─ Dockerfile
 │  └─ requirements.txt
 ├─ web/                    # Vue 3 前端（见 web/README.md）
-├─ tools/                  # 标注与评测脚本
+│  ├─ nginx.conf           # 同域反代 + SPA 回落
+│  └─ Dockerfile           # 两阶段构建
+├─ tools/                  # 标注、评测与数据维护
 │  ├─ annotate.py          # bbox 标注工具（tkinter，零依赖）
 │  ├─ run_eval.py          # 批量跑定位，产出 pred.jsonl
-│  └─ eval.py              # 算 hit@1，带 Wilson 置信区间
-├─ data/eval/              # 评测集（图片不入库，只提交 gt.jsonl / pred.jsonl）
-├─ docs/                   # 设计文档与技术文档
+│  ├─ eval.py              # 定位 hit@1 + 分阶段 + 聚类区间
+│  ├─ eval_retrieval.py    # 检索 Recall@K / MRR / 消融
+│  ├─ selfcheck.py         # 数据自检（改完先跑这个）
+│  ├─ repair_eval_data.py  # 补缺失字段 + 一致性审计
+│  ├─ audit_goal_leak.py   # goal 泄漏审计
+│  └─ rebuild_paths.py     # 重建任务链 name/aliases
+├─ data/
+│  ├─ eval/                # 定位评测：164 条真值 + 47 张脱敏截图
+│  └─ rag/                 # 120 条任务链 + 三套检索评测集
+├─ docs/                   # 交接文档 / 技术文档 8 章 / 部署指南 / 演示速查卡
 ├─ .env.example
 └─ docker-compose.yml
 ```
@@ -121,5 +133,11 @@ python tools/eval.py --ci
   - 已做过 goal 泄漏审计并清洗：清洗前 91.5%，清洗后 89.6%，这 1.9 个点是我们主动去掉的水分（见 `docs/交接文档.md` §六）
 - [x] 前端：拍照上传 → 叠圈微调 → 全屏指路（含示例一键体验）
 - [x] MCP 服务：4 个工具（locate_element / search_guide / check_risk / compose_card）
-- [ ] RAG：目前只有词面召回（`server/app/guide.py`），向量 + rerank + 消融表待补
-- [ ] 多步流程预热（依赖 RAG）
+- [x] **RAG 三阶检索**：词面 + 向量（bge-small-zh ONNX）+ RRF，含域外拒识
+  - 数据重建（name/aliases）后 **Recall@5 84.6%**（留出集，净化口径，95%CI [75.0, 94.2]）
+  - 详见 `docs/RAG实现记录.md`，其中记录了两次返工和一次过拟合回滚
+- [x] 部署配置：Docker Compose 双服务 + Nginx 同域反代（**未上真机**）
+- [x] 技术文档 8 章（`docs/技术文档/00_目录.md`）
+- [ ] 5 人真实访谈（W2 硬交付）
+- [ ] 演示视频
+- [ ] 多步流程预热（后端能力已就绪，前端未接入）

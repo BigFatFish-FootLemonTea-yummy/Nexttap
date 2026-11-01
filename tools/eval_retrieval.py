@@ -30,7 +30,10 @@ from typing import Any, Callable, Dict, List
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "server"))
 
-DEFAULT_EVAL = ROOT / "data" / "rag" / "retrieval_eval.jsonl"
+DEFAULT_EVAL = ROOT / "data" / "rag" / "retrieval_full.jsonl"
+# 默认用盲写集（170 条，覆盖 120/120 任务链）。
+# 不要默认用 retrieval_eval.jsonl——那 68 条里有 64 条逐字等于 gt.jsonl 的 goal，
+# 属同源数据，跑出来的数字没有独立信息量。
 
 
 def load_eval(path: Path) -> List[Dict[str, Any]]:
@@ -101,7 +104,9 @@ def main(argv=None) -> int:
 
     if not args.data.exists():
         print(f"[FATAL] 评测集不存在：{args.data}")
-        print("        先跑 python tools/build_retrieval_eval.py")
+        print("        可用的评测集：data/rag/retrieval_full.jsonl（盲写，推荐）")
+        print("                      data/rag/retrieval_heldout.jsonl（留出）")
+        print("                      data/rag/retrieval_eval.jsonl（初版，与 gt 同源，别引用）")
         return 2
 
     rows = load_eval(args.data)
