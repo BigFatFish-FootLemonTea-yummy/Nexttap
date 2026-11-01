@@ -59,6 +59,10 @@ node_modules/
 dist/
 .vite/
 
+# 数据文件备份（rebuild_paths.py 等脚本自动生成）
+data/rag/*.bak-*
+data/rag/*.jsonl.tmp
+
 # 编辑器
 .vscode/
 .idea/
