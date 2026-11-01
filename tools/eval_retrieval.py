@@ -174,9 +174,22 @@ def main(argv=None) -> int:
         best = m.get("Recall@5", 0)
 
     print()
-    print(f"判定：Recall@5 = {best * 100:.1f}%（目标 ≥ 90%）",
-          "PASS" if best >= 0.9 else "FAIL")
-    return 0 if best >= 0.9 else 1
+    # 不给单一 PASS/FAIL 判定，只报数字 + 风险提示。
+    #
+    # 原因（2026-11-01 独立验证指出）：
+    #   1. 只看一个数字会助长虚报。实测留出集曾被刷到 100%，脚本当时直接
+    #      打印「PASS」，等于工具在帮实现者背书。
+    #   2. 指标高低取决于评测集有没有被"看过"。同一份数据，净化前后能差 11 个点。
+    print(f"Recall@5 = {best * 100:.1f}%")
+    print()
+    print("⚠️  引用前请确认：")
+    print("   - 这个数字有没有被「看着失败项补别名」污染？")
+    print("     本项目曾出现：留出集 86.5% -> 100%，但净化后只有 88.5%")
+    print("   - 同义词表（guide._SYNONYMS）里有没有评测集来源的词条？")
+    print("   - 原集 68 条有 64 条逐字等于 gt.jsonl 的 goal，属同源数据，不要引用")
+    print()
+    print("   对外建议报「净化后」的数字，并披露净化口径。")
+    return 0
 
 
 if __name__ == "__main__":
