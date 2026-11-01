@@ -12,6 +12,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from . import guide
 from .api.routes import router
 from .config import settings
 from .vision.ocr import _engine_instance
@@ -21,10 +22,15 @@ logger = logging.getLogger("nexttap")
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    """启动时预热 OCR。
+    """启动时预热 OCR 与检索模型。
 
     把模型加载的 5–10 秒从"第一次请求"挪到"服务启动"，避免首个用户等到超时。
-    预热失败不阻塞启动（例如 OCR 依赖没装），只是首次定位会变慢。
+    预热失败不阻塞启动（例如依赖没装），只是首次调用会变慢。
+
+    两处预热都要做：
+      - OCR：RapidOCR，约 5–10 秒
+      - 检索：bge-small-zh（ONNX），约 7–10 秒；不预热的话第一次
+        search_guide 会从 20ms 变成 10s，MCP 客户端很可能直接超时。
     """
     try:
         logger.info("正在预热 OCR ...")
@@ -32,6 +38,13 @@ async def lifespan(_app: FastAPI):
         logger.info("OCR 预热完成")
     except Exception as exc:
         logger.warning("OCR 预热失败，首次定位会明显变慢：%s", exc)
+
+    try:
+        logger.info("正在预热检索模型 ...")
+        guide.warmup()
+    except Exception as exc:
+        logger.warning("检索预热失败，首次检索会变慢：%s", exc)
+
     yield
 
 

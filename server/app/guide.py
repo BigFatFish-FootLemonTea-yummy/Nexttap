@@ -37,6 +37,7 @@ import json
 import logging
 import os
 import re
+import threading
 from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
@@ -103,6 +104,8 @@ _DEFAULT_MODE = "hybrid"
 _cache: Optional[List[Dict[str, Any]]] = None
 _vector_index: Optional["_VectorIndex"] = None
 _reranker: Any = None
+# 保护 _vector_index 的懒加载，避免并发首请求重复加载 90MB 模型
+_index_lock = threading.Lock()
 
 _log = logging.getLogger("nexttap.guide")
 
@@ -254,10 +257,9 @@ def _index_text(path: Dict[str, Any]) -> str:
         parts.append(name)
 
     # aliases 里有大量模板产物（"怎么X"/"我要X"/"帮我X"），
-    # 清洗时直接剔掉，避免稀释语义。
-    # 判定：去掉 2 字前缀后，剩下的部分与原 alias 不同（说明确实带模板前缀）。
+    # 清洗时直接剔掉前缀，避免稀释语义。
     # 注意：早先写成 `a[2:] in (name, a[2:])`，后半段恒真导致条件永远成立，
-    #       虽然行为碰巧对，但意图与实现不符，已改为显式判断。
+    #       虽然行为碰巧对，但意图与实现不符，已改为显式剥离。
     for alias in path.get("aliases") or []:
         a = str(alias).strip()
         if not a:
@@ -366,12 +368,40 @@ class _VectorIndex:
 
 
 def _get_index() -> Optional[_VectorIndex]:
+    """取（必要时加载）向量索引。
+
+    加锁的原因：并发首请求时，多个线程会同时看到 _vector_index is None，
+    各自加载一份 90MB 模型 —— 在 mem_limit 1500m 的容器里足以触发 OOM。
+    双检锁保证只加载一次。
+    """
     global _vector_index
     if _mode() == "lexical":
         return None
-    if _vector_index is None:
-        _vector_index = _VectorIndex()
+    if _vector_index is not None:
+        return _vector_index if _vector_index.ok else None
+    with _index_lock:
+        if _vector_index is None:
+            _vector_index = _VectorIndex()
     return _vector_index if _vector_index.ok else None
+
+
+def warmup() -> None:
+    """预热检索模型。
+
+    和 OCR 一样，模型加载要 7–10 秒（含首次下载可能更久）。
+    如果放在第一个用户请求里，第一次定位会从 2.7s 变成 10s+，
+    而且可能被上游超时掐断。
+
+    由 `main.py` 的 lifespan 在启动时调用；失败不影响启动。
+    """
+    try:
+        index = _get_index()
+        if index is None:
+            _log.info("检索使用纯词面模式（未加载 embedding 模型）")
+        else:
+            _log.info("检索模型预热完成，索引 %d 条", len(index.paths))
+    except Exception as exc:  # noqa: BLE001
+        _log.warning("检索预热失败，首次检索会变慢：%s", exc)
 
 
 # ---------------------------------------------------------------------------
@@ -524,6 +554,13 @@ def search(query: str, top_k: int = 3, min_score: float = 0.42) -> List[Dict[str
     # 也截到 30，导致 search(q, top_k=50) 只返回 30 条。
     _POOL = max(30, top_k)
     lexical_top = [(i, s) for i, s in lexical_all[:_POOL] if s >= min_score]
+    # 两路用不同的 query 形式，这是**实测出来的最优组合**，不是笔误：
+    #   词面 → query_n（去掉"我想""帮我"等填充词，剩下的才是关键词）
+    #   向量 → 原始 query（bge 对完整句子理解更好，去掉填充词反而丢语义）
+    #
+    # 曾试图"统一输入"改成两路都用 query_n，A/B 实测变差：
+    #   原集 R@5 79.4% → 76.5%，留出集 71.2% → 69.2%
+    # 所以保留这个不对称。改之前请先跑 tools/eval_retrieval.py 对比。
     vector_top = index.search(query, top_k=_POOL)
 
     # 域外拒识（2026-11-01 修，三轮）
