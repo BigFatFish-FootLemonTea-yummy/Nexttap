@@ -110,7 +110,7 @@
 {"task_id": "gov.rights_query", "name": "社保缴费信息查询", "app": "yueshengshi", "aliases": ["社保缴费记录", "缴费明细", "查缴费"], "steps": [{"step": 1, "screen": "", "target": "点个人社保权益单查询", "hint": "点「个人社保权益单查询」"}]}
 {"task_id": "gov.pension", "name": "养老保险", "app": "yueshengshi", "aliases": ["养老金在哪查", "养老金", "养老保险查询"], "steps": [{"step": 1, "screen": "", "target": "点养老保险", "hint": "点「养老保险」"}]}
 {"task_id": "gov.social_card_service", "name": "社保卡服务", "app": "yueshengshi", "aliases": ["社保卡办理", "补办社保卡", "社保卡业务"], "steps": [{"step": 1, "screen": "", "target": "点社保卡服务", "hint": "点「社保卡服务」"}]}
-{"task_id": "gov.my_social_card", "name": "我的社保卡", "app": "yueshengshi", "aliases": ["社保卡在哪", "我的社保卡呢", "查社保卡"], "steps": [{"step": 1, "screen": "", "target": "点我的社保卡", "hint": "点「我的社保卡」"}]}
+{"task_id": "gov.my_social_card", "name": "我的社保卡", "app": "yueshengshi", "aliases": ["社保卡在哪", "我的社保卡呢", "看看我的卡"], "steps": [{"step": 1, "screen": "", "target": "点我的社保卡", "hint": "点「我的社保卡」"}]}
 {"task_id": "gov.tax", "name": "粤税通", "app": "yueshengshi", "aliases": ["报税的地方", "交税", "税务"], "steps": [{"step": 1, "screen": "", "target": "点粤税通", "hint": "点「粤税通」"}]}
 {"task_id": "gov.suihaoban", "name": "穗好办", "app": "yueshengshi", "aliases": ["广州本地服务", "穗好办在哪", "广州办事"], "steps": [{"step": 1, "screen": "", "target": "点穗好办", "hint": "点「穗好办」"}]}
 {"task_id": "hospital.enter_app", "name": "进入白云区人民医院", "app": "hospital", "aliases": ["白云区那家医院", "进白云医院", "白云医院"], "steps": [{"step": 1, "screen": "", "target": "进广州市白云区人民医院", "hint": "点「进广州市白云区人民医院」"}]}

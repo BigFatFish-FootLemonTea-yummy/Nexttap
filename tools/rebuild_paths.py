@@ -160,7 +160,7 @@ REWRITE: Dict[str, tuple] = {
     "gov.unemployment": ("办失业登记", ["失业了要办手续", "办失业登记"]),
     "gov.unemployment_change": ("改失业信息", ["失业金信息要改", "改失业信息"]),
     "gov.work_injury": ("改工伤信息", ["工伤信息要改", "改工伤信息"]),
-    "gov.my_social_card": ("我的社保卡", ["社保卡在哪", "我的社保卡呢", "查社保卡"]),
+    "gov.my_social_card": ("我的社保卡", ["社保卡在哪", "我的社保卡呢", "看看我的卡"]),
     "gov.social_card_query": ("查社保卡信息", ["社保卡里有什么", "查社保卡"]),
     "gov.social_card_service": ("社保卡服务", ["社保卡办理", "补办社保卡", "社保卡业务"]),
     "gov.social_scan": ("扫一扫", ["扫个码", "扫社保卡二维码", "扫一下"]),
@@ -212,6 +212,27 @@ APP_OF = {
 
 def app_for(task_id: str) -> str:
     return APP_OF.get(task_id.split(".")[0], "")
+
+
+def _edit_distance(a: str, b: str) -> int:
+    """Levenshtein 距离，用于泄漏检查的「高度相似」判定。"""
+    if a == b:
+        return 0
+    if not a:
+        return len(b)
+    if not b:
+        return len(a)
+    prev = list(range(len(b) + 1))
+    for i, ca in enumerate(a, 1):
+        cur = [i]
+        for j, cb in enumerate(b, 1):
+            cur.append(min(
+                prev[j] + 1,        # 删除
+                cur[j - 1] + 1,     # 插入
+                prev[j - 1] + (ca != cb),  # 替换
+            ))
+        prev = cur
+    return prev[-1]
 
 
 def dedup_steps(steps: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -292,9 +313,15 @@ def main(argv: Optional[List[str]] = None) -> int:
     print(f"  补 app 字段    : {len(rows)} 条")
     print(f"  name 总字数    : {old_name_len} -> {new_name_len}")
 
-    # 校验：新 alias 不能与任何评测集 query 完全相同（防止反向泄漏）
+    # 校验：新 name/alias 与评测集 query 的重合度
+    #
+    # 早先只查「完全相同」，被独立验证指出形同虚设——21/68 条子串泄漏全部漏检。
+    # 现在分三档查：
+    #   exact  完全相等              —— 送分题，必须改
+    #   substr query 逐字包含 name/alias（≥3 字）—— 弱泄漏，需人工判断
+    #   edit   编辑距离 ≤2            —— 高度相似，需人工判断
     eval_dir = ROOT / "data" / "rag"
-    leaks = []
+    exact, substr, near = [], [], []
     for f in ("retrieval_eval.jsonl", "retrieval_heldout.jsonl", "retrieval_full.jsonl"):
         p = eval_dir / f
         if not p.exists():
@@ -304,18 +331,41 @@ def main(argv: Optional[List[str]] = None) -> int:
                 continue
             q = json.loads(line)["query"].strip()
             for r in rows:
-                if q == r["name"] or q in r["aliases"]:
-                    leaks.append((f, q, r["task_id"]))
+                cands = [r["name"]] + list(r["aliases"])
+                for c in cands:
+                    c = str(c).strip()
+                    if not c:
+                        continue
+                    if q == c:
+                        exact.append((f, q, c, r["task_id"]))
+                    elif len(c) >= 3 and c in q:
+                        substr.append((f, q, c, r["task_id"]))
+                    elif abs(len(q) - len(c)) <= 2 and _edit_distance(q, c) <= 2:
+                        near.append((f, q, c, r["task_id"]))
     print()
     print("=" * 72)
-    print("3. 泄漏检查（新 name/alias 是否与评测集 query 完全相同）")
+    print("3. 泄漏检查（三档：完全相同 / 子串 / 编辑距离≤2）")
     print("=" * 72)
-    if leaks:
-        print(f"  发现 {len(leaks)} 处完全相同：")
-        for f, q, tid in leaks[:20]:
-            print(f"    {f}: {q!r} == {tid}")
-        print("  （完全相同意味着评测时是「送分题」，需要改掉）")
-    else:
+    print(f"  完全相同      : {len(exact)} 处   ← 必须为 0")
+    print(f"  query 包含别名: {len(substr)} 处   ← 弱泄漏，人工判断")
+    print(f"  编辑距离 ≤2   : {len(near)} 处   ← 高度相似，人工判断")
+    if exact:
+        print()
+        print("  完全相同明细：")
+        for f, q, c, tid in exact:
+            print(f"    {f}: {q!r} == {c!r} ({tid})")
+    if substr:
+        print()
+        print("  query 包含别名的明细（前 20）：")
+        for f, q, c, tid in substr[:20]:
+            print(f"    {f}: {q!r} ⊃ {c!r} ({tid})")
+    if near:
+        print()
+        print("  编辑距离 ≤2 的明细（前 10）：")
+        for f, q, c, tid in near[:10]:
+            print(f"    {f}: {q!r} ~ {c!r} ({tid})")
+    if not exact:
+        print()
         print("  PASS 没有与评测集 query 完全相同的 name/alias")
 
     if not write:
