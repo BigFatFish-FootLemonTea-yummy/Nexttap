@@ -16,7 +16,7 @@ from typing import Any, Dict
 
 from PIL import Image
 
-from . import guide
+from . import agent, guide
 from .llm.select import choose
 from .vision.candidates import merge_lines, pad_box, to_norm
 from .vision.ocr import run_ocr
@@ -146,6 +146,26 @@ def compose_card(
         step: 当前是第几步，从 1 开始。
     """
     return guide.compose_card(text, instruction, task_id, step)
+
+
+@mcp.tool()
+def run_task(goal: str, image_paths: list[str], task_id: str = "") -> Dict[str, Any]:
+    """跑完整的多步办事流程：规划 → 风险门禁 → 逐步定位 → 组装卡片。
+
+    与 locate_element 的区别：locate_element 只处理一张图、一个动作；
+    本工具会先检索标准任务路径，再按顺序走完多步，并返回每一步的决策记录。
+
+    Args:
+        goal: 老人原话，例如「我想看看儿子」。
+        image_paths: 按步骤顺序排列的截图本地绝对路径。
+        task_id: 可选，强制指定任务链，例如 wechat.video_call_son。
+
+    Returns:
+        status（done / in_progress / needs_retake / escalated / no_image）、
+        task_name、每步的 text 与 instruction、next_step，以及 trace。
+        status=escalated 时**不要**继续操作，必须转人工。
+    """
+    return agent.run(goal, image_paths, task_id=task_id)
 
 
 def main() -> None:

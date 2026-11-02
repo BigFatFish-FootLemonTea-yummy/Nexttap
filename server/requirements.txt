@@ -5,8 +5,7 @@ pillow>=10.0
 rapidocr-onnxruntime>=1.3.24
 openai>=1.30
 python-dotenv>=1.0
-mcp>=1.0
-
+mcp>=1.0,<2
 # 检索用的本地 embedding（bge-small-zh-v1.5，ONNX，约 90MB 模型）
 # 没装也能跑：guide.search() 会自动降级为纯词面召回，不影响主流程
 fastembed>=0.4

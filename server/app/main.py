@@ -9,10 +9,13 @@ from __future__ import annotations
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from typing import List, Optional
 
-from . import guide
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+
+from . import agent, guide
 from .api.routes import router
 from .config import settings
 from .vision.ocr import _engine_instance
@@ -60,6 +63,52 @@ app.add_middleware(
 )
 
 app.include_router(router)
+
+
+class AgentRunIn(BaseModel):
+    """多步办事 Agent 的入参。
+
+    image_ids   —— 前端上传后拿到的 id，按步骤顺序给（Web 用这个）
+    image_paths —— 本地绝对路径，MCP / 命令行调试用
+    task_id     —— 可选，强制指定任务链
+    """
+
+    goal: str = Field(..., min_length=1, max_length=100)
+    image_ids: List[str] = Field(default_factory=list)
+    image_paths: List[str] = Field(default_factory=list)
+    task_id: str = ""
+
+
+def _resolve_image_id(image_id: str) -> Optional[str]:
+    """把上传返回的 image_id 还原成本地路径；找不到返回 None。"""
+    if not image_id or not image_id.isalnum():
+        return None
+    for suffix in (".png", ".jpg", ".jpeg", ".webp"):
+        candidate = settings.screenshots_dir / f"{image_id}{suffix}"
+        if candidate.exists():
+            return str(candidate)
+    return None
+
+
+@app.post("/api/agent/run")
+def agent_run(body: AgentRunIn) -> dict:
+    """多步办事：检索路径 → 逐步定位 → 风险门禁 → 出步骤链。
+
+    返回里的 trace 记录每一步的决策，前端可直接展示"它刚才想了什么"。
+    """
+    paths = list(body.image_paths)
+    missing: List[str] = []
+    for image_id in body.image_ids:
+        resolved = _resolve_image_id(image_id)
+        if resolved:
+            paths.append(resolved)
+        else:
+            missing.append(image_id)
+
+    if missing:
+        raise HTTPException(status_code=404, detail=f"这些截图不存在：{missing}")
+
+    return agent.run(body.goal, paths, task_id=body.task_id)
 
 
 @app.get("/health")
