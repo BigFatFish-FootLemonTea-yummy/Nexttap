@@ -176,6 +176,37 @@ def _mode() -> str:
     return os.getenv("NEXTTAP_RETRIEVAL", _DEFAULT_MODE).strip().lower() or _DEFAULT_MODE
 
 
+def retrieval_status() -> Dict[str, Any]:
+    """报告检索**实际生效**的模式，供 /health 暴露。
+
+    只读当前状态，不触发加载——/health 不该把 90MB 模型拉起来，
+    所以服务刚起来、预热未完成时，effective 会短暂显示 lexical。
+
+    为什么需要它：向量模型缺失时 search() 会静默降级为纯词面，
+    Recall@5 从 84.6% 掉到 71.8%，但接口照常返回、日志只有一行 warning。
+    把这个状态暴露出来，演示前一天能自查。
+    """
+    configured = _mode()
+    vector_ok = bool(_vector_index is not None and getattr(_vector_index, "ok", False))
+    reranker_ok = bool(_reranker)
+
+    if configured == "lexical":
+        effective = "lexical"
+    elif vector_ok:
+        effective = "hybrid_rerank" if configured == "hybrid_rerank" and reranker_ok else "hybrid"
+    else:
+        effective = "lexical"
+
+    return {
+        "configured": configured,
+        "effective": effective,
+        "degraded": configured != "lexical" and effective == "lexical",
+        "vector_ready": vector_ok,
+        "reranker_ready": reranker_ok,
+        "index_size": len(_vector_index.paths) if vector_ok else 0,
+    }
+
+
 def _norm(text: str) -> str:
     return re.sub(r"\s+", "", str(text)).lower()
 

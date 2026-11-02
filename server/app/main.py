@@ -64,8 +64,12 @@ app.include_router(router)
 
 @app.get("/health")
 def health() -> dict:
+    retrieval = guide.retrieval_status()
     return {
         "ok": True,
         "model": settings.llm_model,
         "llm_key_set": bool(settings.llm_api_key),
+        # 一眼可见的检索档位：hybrid_rerank / hybrid / lexical
+        "retrieval_mode": retrieval["effective"],
+        "retrieval": retrieval,
     }
