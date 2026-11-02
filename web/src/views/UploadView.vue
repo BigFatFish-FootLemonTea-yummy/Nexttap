@@ -55,14 +55,17 @@ async function onFileChange(event: Event) {
   preparing.value = true
   try {
     image.value = await compressImage(file)
-    // 续拍模式下选完图直接跑，少一次点击
-    if (continuing.value) await submit()
   } catch (err) {
     image.value = null
     error.value = new ApiError(0, 'invalid', err instanceof Error ? err.message : '图片读取失败，请换一张')
   } finally {
     preparing.value = false
   }
+
+  // 续拍模式：选完图直接跑。
+  // 注意必须放在 finally 之后——submit 里会用 busy 做守卫，而 busy 包含 preparing，
+  // 在 try 里调用会被自己挡住（这个 bug 曾导致第二张图上传后没有任何反应）。
+  if (image.value && continuing.value) await submit()
 }
 
 /** 一键示例：用内置截图跑完整链路，答辩现场不依赖拍照和网络 */
@@ -71,12 +74,12 @@ async function loadSample() {
   error.value = null
   sampleLoading.value = true
   try {
-    const res = await fetch(`${import.meta.env.BASE_URL}samples/wechat-041.jpg`)
+    const res = await fetch(`${import.meta.env.BASE_URL}samples/hospital-001.jpg`)
     if (!res.ok) throw new Error('示例图片加载失败')
     const blob = await res.blob()
     const file = new File([blob], 'sample.jpg', { type: blob.type || 'image/jpeg' })
     image.value = await compressImage(file)
-    goal.value = '我想看看儿子'
+    goal.value = '我想挂个号'
     // 先放开 busy，否则 submit 里的 canSubmit 会把自己挡住
     sampleLoading.value = false
     await submit()

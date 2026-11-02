@@ -11,6 +11,7 @@ const session = useSessionStore()
 
 const editingText = ref(false)
 const draftText = ref('')
+const showTrace = ref(false)
 
 const statusText = computed(() => {
   switch (session.status) {
@@ -34,6 +35,60 @@ const statusClass = computed(() => {
 })
 
 const confidencePct = computed(() => Math.round((session.currentStep?.confidence ?? 0) * 100))
+
+/** 失败原因：取 trace 里最后一条失败的 observe */
+const failureReason = computed(() => {
+  if (session.status !== 'needs_retake') return ''
+  const trace = session.agent?.trace ?? []
+  for (let i = trace.length - 1; i >= 0; i -= 1) {
+    const item = trace[i]
+    if (item.node === 'observe' && item.ok === false) {
+      return String(item.reason ?? '没有识别到目标')
+    }
+  }
+  return '没有识别到目标'
+})
+
+const failedStep = computed(() => {
+  const trace = session.agent?.trace ?? []
+  for (let i = trace.length - 1; i >= 0; i -= 1) {
+    const item = trace[i]
+    if (item.node === 'observe' && item.ok === false) {
+      return Number(item.step ?? session.steps.length + 1)
+    }
+  }
+  return session.steps.length + 1
+})
+
+/** trace 转成人话，答辩时可以直接展示 */
+const traceLines = computed(() => {
+  const trace = session.agent?.trace ?? []
+  const lines: { node: string; text: string }[] = []
+  for (const item of trace) {
+    const node = String(item.node)
+    if (node === 'plan') {
+      lines.push({ node: '规划', text: `命中任务「${item.task_name || '无'}」，计划 ${item.planned_steps} 步，收到 ${item.images} 张图` })
+    } else if (node === 'guard') {
+      if (item.scope === 'goal') {
+        lines.push({ node: '门禁', text: `整体风险：${item.level}` })
+      } else if (item.level && item.level !== 'none') {
+        lines.push({ node: '门禁', text: `第 ${item.step} 步风险：${item.level}` })
+      }
+    } else if (node === 'act') {
+      lines.push({ node: '执行', text: `第 ${item.step} 步：在 ${item.image} 上找「${item.step_goal}」` })
+    } else if (node === 'replan') {
+      lines.push({ node: '重规划', text: `第 ${item.step} 步动作对不上，退回用户原话重试` })
+    } else if (node === 'observe') {
+      lines.push({
+        node: '观察',
+        text: item.ok ? `第 ${item.step} 步命中「${item.text}」（${Math.round(Number(item.confidence ?? 0) * 100)}%）` : `第 ${item.step} 步失败：${item.reason}`,
+      })
+    } else if (node === 'compose') {
+      lines.push({ node: '收尾', text: `完成 ${item.done_steps} 步，状态 ${item.status}` })
+    }
+  }
+  return lines
+})
 
 function onBoxChange(box: NormBox) {
   session.setBox(box)
@@ -107,6 +162,20 @@ function nextShot() {
       </ol>
     </section>
 
+    <!-- 失败提示：这一步没认出来，必须让用户知道 -->
+    <section
+      v-if="session.status === 'needs_retake'"
+      class="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900"
+      role="alert"
+    >
+      <p class="font-medium">第 {{ failedStep }} 步没认出来</p>
+      <p class="mt-1 text-amber-800">{{ failureReason }}</p>
+      <p class="mt-2 text-xs text-amber-700">
+        常见原因：拍糊了、有反光、只拍了半个屏幕，或者这一屏确实缺少需要点的元素。
+      </p>
+      <UiButton size="sm" variant="outline" class="mt-3" @click="nextShot">重拍这一步</UiButton>
+    </section>
+
     <!-- 当前步骤的截图与高亮 -->
     <section class="rounded-lg border border-border bg-card p-3">
       <TargetOverlay
@@ -153,9 +222,27 @@ function nextShot() {
       </button>
     </section>
 
+    <!-- 决策记录：答辩时可直接展开给评委看 -->
+    <section class="rounded-lg border border-border bg-card">
+      <button
+        type="button"
+        class="flex w-full items-center justify-between px-4 py-3 text-sm text-muted-foreground"
+        @click="showTrace = !showTrace"
+      >
+        <span>决策记录（{{ traceLines.length }} 条）</span>
+        <span aria-hidden="true">{{ showTrace ? '收起' : '展开' }}</span>
+      </button>
+      <ul v-if="showTrace" class="space-y-1 border-t border-border px-4 py-3 text-xs">
+        <li v-for="(line, index) in traceLines" :key="index" class="flex gap-2">
+          <span class="shrink-0 rounded bg-secondary px-1.5 py-0.5 text-secondary-foreground">{{ line.node }}</span>
+          <span class="min-w-0 text-muted-foreground">{{ line.text }}</span>
+        </li>
+      </ul>
+    </section>
+
     <!-- 多步：继续拍下一步 -->
     <section v-if="session.canContinue" class="rounded-lg border border-primary/30 bg-primary/5 p-4">
-      <p class="text-sm font-medium text-primary">还有 {{ session.nextStep?.step }} 步</p>
+      <p class="text-sm font-medium text-primary">还有下一步</p>
       <p class="mt-1 text-xs text-muted-foreground">
         下一步：{{ session.nextStep?.target }}。等老人点完这一步，把新界面拍下来即可。
       </p>
@@ -164,9 +251,7 @@ function nextShot() {
     <div class="mt-auto flex flex-col gap-2">
       <UiButton size="lg" block @click="router.push({ name: 'show' })">给老人看</UiButton>
       <UiButton v-if="session.canContinue" variant="outline" block @click="nextShot">拍下一步</UiButton>
-      <div class="grid grid-cols-1 gap-2">
-        <UiButton variant="ghost" @click="retake">重新开始（换一个目标）</UiButton>
-      </div>
+      <UiButton variant="ghost" @click="retake">重新开始（换一个目标）</UiButton>
     </div>
   </div>
 </template>
