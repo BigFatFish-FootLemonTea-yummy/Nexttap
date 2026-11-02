@@ -287,6 +287,9 @@ def _score(query: str, path: Dict[str, Any]) -> float:
 # ---------------------------------------------------------------------------
 
 _MODEL_NAME = os.getenv("NEXTTAP_EMBED_MODEL", "BAAI/bge-small-zh-v1.5")
+# 本地已下载的模型目录（含 model_optimized.onnx / tokenizer.json 等）。
+# 设了就完全不走网络；内网部署、Docker 挂载模型时用。
+_MODEL_PATH = os.getenv("NEXTTAP_EMBED_PATH", "").strip()
 
 
 def _index_text(path: Dict[str, Any]) -> str:
@@ -354,12 +357,15 @@ class _VectorIndex:
             return
 
         try:
-            self._model = TextEmbedding(
-                model_name=_MODEL_NAME,
-                providers=["CPUExecutionProvider"],
-                # 静默下载，别把进度条刷进日志
-                threads=2,
-            )
+            embed_kwargs: Dict[str, Any] = {
+                "model_name": _MODEL_NAME,
+                "providers": ["CPUExecutionProvider"],
+                "threads": 2,
+            }
+            if _MODEL_PATH:
+                # 完全离线：直接用本地目录，不再尝试联网
+                embed_kwargs["specific_model_path"] = _MODEL_PATH
+            self._model = TextEmbedding(**embed_kwargs)
             texts = [_index_text(p) for p in self.paths]
             vecs = np.array(list(self._model.embed(texts)), dtype="float32")
         except Exception as exc:  # noqa: BLE001
