@@ -3,8 +3,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import UiButton from '@/components/UiButton.vue'
 import TargetOverlay from '@/components/TargetOverlay.vue'
-import { locate } from '@/api/client'
-import { ApiError, type NormBox } from '@/types/api'
+import type { NormBox } from '@/types/api'
 import { useSessionStore } from '@/stores/session'
 
 const router = useRouter()
@@ -12,18 +11,29 @@ const session = useSessionStore()
 
 const editingText = ref(false)
 const draftText = ref('')
-const showRetry = ref(false)
-const retryGoal = ref(session.goal)
-const locating = ref(false)
-const error = ref<ApiError | null>(null)
 
-const result = computed(() => session.result)
-const confidencePct = computed(() => Math.round((result.value?.confidence ?? 0) * 100))
-const elapsedSec = computed(() => ((result.value?.elapsed_ms ?? 0) / 1000).toFixed(1))
-const retryInvalid = computed(() => {
-  const len = retryGoal.value.trim().length
-  return len === 0 || len > 100
+const statusText = computed(() => {
+  switch (session.status) {
+    case 'done':
+      return '全部完成'
+    case 'in_progress':
+      return '进行中'
+    case 'needs_retake':
+      return '需要重拍'
+    case 'escalated':
+      return '需转人工'
+    default:
+      return ''
+  }
 })
+
+const statusClass = computed(() => {
+  if (session.status === 'done') return 'bg-emerald-100 text-emerald-800'
+  if (session.status === 'in_progress') return 'bg-primary/10 text-primary'
+  return 'bg-amber-100 text-amber-900'
+})
+
+const confidencePct = computed(() => Math.round((session.currentStep?.confidence ?? 0) * 100))
 
 function onBoxChange(box: NormBox) {
   session.setBox(box)
@@ -41,48 +51,71 @@ function saveText() {
   editingText.value = false
 }
 
-/** 恢复 AI 原始结果（人工微调改错了能一键退回） */
-function restoreAuto() {
-  session.restoreResult()
-}
-
-async function retry() {
-  if (retryInvalid.value || locating.value) return
-  const goal = retryGoal.value.trim()
-  locating.value = true
-  error.value = null
-  try {
-    // 复用 image_id，不重新上传（图片已经在后端）
-    const next = await locate({ image_id: session.imageId, goal })
-    session.setGoal(goal)
-    session.applyResult(next)
-    showRetry.value = false
-  } catch (err) {
-    error.value = err instanceof ApiError ? err : new ApiError(0, 'network', '定位失败，请重试')
-  } finally {
-    locating.value = false
-  }
-}
-
 function retake() {
   session.reset()
   void router.push({ name: 'upload' })
 }
+
+function nextShot() {
+  void router.push({ name: 'upload', query: { mode: 'next' } })
+}
 </script>
 
 <template>
-  <div v-if="result && session.box" class="flex flex-1 flex-col gap-4 pb-4">
+  <div v-if="session.currentStep" class="flex flex-1 flex-col gap-4 pb-4">
+    <!-- 任务头 + 步骤链 -->
+    <section class="rounded-lg border border-border bg-card p-4">
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <p class="text-xs text-muted-foreground">老人想做的事</p>
+          <p class="mt-1 truncate text-lg font-semibold">{{ session.taskName || session.goal }}</p>
+        </div>
+        <span class="shrink-0 rounded-full px-3 py-1 text-xs font-medium" :class="statusClass">
+          {{ statusText }}
+        </span>
+      </div>
+
+      <ol class="mt-3 space-y-1">
+        <li v-for="step in session.steps" :key="step.step">
+          <button
+            type="button"
+            class="flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-sm transition-colors"
+            :class="step.step === session.stepIndex ? 'bg-primary/10' : 'hover:bg-secondary/60'"
+            @click="session.selectStep(step.step)"
+          >
+            <span
+              class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
+              :class="step.step === session.stepIndex ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'"
+            >
+              {{ step.step }}
+            </span>
+            <span class="min-w-0">
+              <span class="font-medium">点「{{ step.text }}」</span>
+              <span class="block truncate text-xs text-muted-foreground">{{ step.instruction }}</span>
+            </span>
+          </button>
+        </li>
+        <li v-if="session.nextStep" class="flex items-start gap-2 px-2 py-2 text-sm text-muted-foreground">
+          <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-dashed border-input text-xs">
+            {{ session.nextStep.step }}
+          </span>
+          <span class="min-w-0">
+            待拍摄：{{ session.nextStep.target }}
+            <span class="block text-xs">把老人点完上一步后的界面拍下来</span>
+          </span>
+        </li>
+      </ol>
+    </section>
+
+    <!-- 当前步骤的截图与高亮 -->
     <section class="rounded-lg border border-border bg-card p-3">
-      <p class="px-1 pb-2 text-sm text-muted-foreground">
-        需求：<span class="font-medium text-foreground">{{ session.goal }}</span>
-      </p>
       <TargetOverlay
         :image-url="session.imageDataUrl"
         :natural-width="session.width"
         :natural-height="session.height"
         :box="session.box"
         :editable="true"
-        :label="`请点 ${result.text}`"
+        :label="`请点 ${session.currentStep.text}`"
         @update:box="onBoxChange"
       />
       <p class="px-1 pt-2 text-xs text-muted-foreground">
@@ -90,14 +123,7 @@ function retake() {
       </p>
     </section>
 
-    <div
-      v-if="result.low_confidence"
-      class="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900"
-      role="alert"
-    >
-      AI 把握不大（置信度 {{ confidencePct }}%）。请核对圈的位置，必要时手动调整或重新拍照。
-    </div>
-
+    <!-- 指引文案 -->
     <section class="rounded-lg border border-border bg-card p-4">
       <div class="flex items-start justify-between gap-3">
         <p class="text-xl font-semibold leading-snug" aria-live="polite">{{ session.instruction }}</p>
@@ -119,38 +145,27 @@ function retake() {
         </div>
       </div>
       <p class="mt-3 text-xs text-muted-foreground">
-        命中「{{ result.text }}」 · 置信度 {{ confidencePct }}% · 候选 {{ result.candidate_count }} 个 · 耗时 {{ elapsedSec }}s
+        第 {{ session.stepIndex }} 步 · 置信度 {{ confidencePct }}%
         <span v-if="session.adjusted" class="text-primary"> · 已人工微调</span>
       </p>
-      <button v-if="session.adjusted" type="button" class="mt-1 text-xs text-primary underline" @click="restoreAuto">
+      <button v-if="session.adjusted" type="button" class="mt-1 text-xs text-primary underline" @click="session.restoreResult()">
         恢复 AI 原结果
       </button>
     </section>
 
-    <section v-if="showRetry" class="rounded-lg border border-border bg-card p-4">
-      <label for="retry-goal" class="text-sm font-medium">换一个目标（不用重新拍照）</label>
-      <input
-        id="retry-goal"
-        v-model="retryGoal"
-        maxlength="120"
-        :disabled="locating"
-        class="mt-2 w-full rounded-xl border border-input bg-background px-3 py-3 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        placeholder="例如：我想给儿子打视频电话"
-      >
-      <p v-if="error" class="mt-2 text-sm text-destructive" role="alert">{{ error.message }}</p>
-      <div class="mt-3 flex gap-2">
-        <UiButton variant="outline" :disabled="locating" @click="showRetry = false">取消</UiButton>
-        <UiButton class="flex-1" :loading="locating" :disabled="retryInvalid" @click="retry">重新定位</UiButton>
-      </div>
+    <!-- 多步：继续拍下一步 -->
+    <section v-if="session.canContinue" class="rounded-lg border border-primary/30 bg-primary/5 p-4">
+      <p class="text-sm font-medium text-primary">还有 {{ session.nextStep?.step }} 步</p>
+      <p class="mt-1 text-xs text-muted-foreground">
+        下一步：{{ session.nextStep?.target }}。等老人点完这一步，把新界面拍下来即可。
+      </p>
     </section>
 
     <div class="mt-auto flex flex-col gap-2">
       <UiButton size="lg" block @click="router.push({ name: 'show' })">给老人看</UiButton>
-      <div class="grid grid-cols-2 gap-2">
-        <UiButton variant="outline" :disabled="locating" @click="showRetry = !showRetry; retryGoal = session.goal; error = null">
-          换一个目标
-        </UiButton>
-        <UiButton variant="ghost" @click="retake">重新拍照</UiButton>
+      <UiButton v-if="session.canContinue" variant="outline" block @click="nextShot">拍下一步</UiButton>
+      <div class="grid grid-cols-1 gap-2">
+        <UiButton variant="ghost" @click="retake">重新开始（换一个目标）</UiButton>
       </div>
     </div>
   </div>

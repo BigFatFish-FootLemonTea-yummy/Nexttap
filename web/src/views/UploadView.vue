@@ -1,19 +1,23 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import UiButton from '@/components/UiButton.vue'
 import { compressImage, formatBytes, type CompressedImage } from '@/lib/compress'
-import { locate, uploadScreenshot } from '@/api/client'
+import { runAgent, uploadScreenshot } from '@/api/client'
 import { ApiError } from '@/types/api'
 import { useSessionStore } from '@/stores/session'
 
+const route = useRoute()
 const router = useRouter()
 const session = useSessionStore()
+
+/** 续拍模式：目标已定，只补一张图 */
+const continuing = computed(() => route.query.mode === 'next')
 
 const cameraInput = ref<HTMLInputElement | null>(null)
 const galleryInput = ref<HTMLInputElement | null>(null)
 const image = ref<CompressedImage | null>(null)
-const goal = ref('')
+const goal = ref(continuing.value ? session.goal : '')
 const preparing = ref(false)
 const sampleLoading = ref(false)
 const stage = ref<'idle' | 'uploading' | 'locating'>('idle')
@@ -31,7 +35,7 @@ const canSubmit = computed(() => Boolean(image.value) && !goalInvalid.value && !
 const stageText = computed(() => {
   if (preparing.value) return '正在压缩图片…'
   if (stage.value === 'uploading') return '正在上传截图…'
-  if (stage.value === 'locating') return `正在识别屏幕内容… 已等待 ${elapsed.value} 秒`
+  if (stage.value === 'locating') return `正在识别并规划步骤… 已等待 ${elapsed.value} 秒`
   return ''
 })
 
@@ -51,6 +55,8 @@ async function onFileChange(event: Event) {
   preparing.value = true
   try {
     image.value = await compressImage(file)
+    // 续拍模式下选完图直接跑，少一次点击
+    if (continuing.value) await submit()
   } catch (err) {
     image.value = null
     error.value = new ApiError(0, 'invalid', err instanceof Error ? err.message : '图片读取失败，请换一张')
@@ -76,8 +82,7 @@ async function loadSample() {
     await submit()
   } catch (err) {
     image.value = null
-    error.value =
-      err instanceof ApiError ? err : new ApiError(0, 'network', '示例加载失败，请重试')
+    error.value = err instanceof ApiError ? err : new ApiError(0, 'network', '示例加载失败，请重试')
   } finally {
     sampleLoading.value = false
   }
@@ -99,29 +104,41 @@ function stopTimer() {
 onBeforeUnmount(stopTimer)
 
 async function submit() {
-  if (!image.value || !canSubmit.value) return
+  if (!image.value || (continuing.value ? busy.value : !canSubmit.value)) return
   const current = image.value
-  const text = goal.value.trim()
+  const text = (continuing.value ? session.goal : goal.value).trim()
   error.value = null
   startTimer()
   try {
     stage.value = 'uploading'
     const uploaded = await uploadScreenshot(current.blob)
-    session.startSession({
+    const entry = {
       imageId: uploaded.image_id,
-      imageDataUrl: current.dataUrl,
+      dataUrl: current.dataUrl,
       width: uploaded.width,
       height: uploaded.height,
-      goal: text,
-    })
+    }
+    if (continuing.value) session.pushImage(entry)
+    else session.startSession({ goal: text, image: entry })
 
     stage.value = 'locating'
-    const result = await locate({ image_id: uploaded.image_id, goal: text })
-    session.applyResult(result)
+    const result = await runAgent({
+      goal: session.goal,
+      image_ids: session.images.map((item) => item.imageId),
+    })
+    session.setAgent(result)
+
+    if (result.status === 'escalated') {
+      error.value = new ApiError(422, 'refused', result.risk?.advice || '涉及资金或账号安全，请转人工')
+      return
+    }
+    if (!result.steps.length) {
+      error.value = new ApiError(422, 'refused', '看不出该点哪里，换一张更清楚、不反光的图再试')
+      return
+    }
     await router.push({ name: 'result' })
   } catch (err) {
-    error.value =
-      err instanceof ApiError ? err : new ApiError(0, 'network', '操作失败，请重试')
+    error.value = err instanceof ApiError ? err : new ApiError(0, 'network', '操作失败，请重试')
   } finally {
     stage.value = 'idle'
     stopTimer()
@@ -135,14 +152,24 @@ async function submit() {
     <input ref="cameraInput" type="file" accept="image/*" capture="environment" class="hidden" @change="onFileChange">
     <input ref="galleryInput" type="file" accept="image/*" class="hidden" @change="onFileChange">
 
+    <section v-if="continuing" class="rounded-lg border border-primary/30 bg-primary/5 p-4">
+      <p class="text-base font-medium">继续拍第 {{ session.steps.length + 1 }} 步</p>
+      <p class="mt-1 text-sm text-muted-foreground">
+        目标：<span class="font-medium text-foreground">{{ session.goal }}</span>
+      </p>
+      <p class="mt-2 text-xs text-muted-foreground">
+        老人点完上一步后，把新出现的界面拍下来，我把下一步指出来。
+      </p>
+    </section>
+
     <section v-if="!image" class="rounded-lg border border-dashed border-input bg-card p-5 text-center">
-      <p class="text-base font-medium">第一步：拍下老人的手机屏幕</p>
+      <p class="text-base font-medium">{{ continuing ? '拍下老人现在的屏幕' : '第一步：拍下老人的手机屏幕' }}</p>
       <p class="mt-1 text-sm text-muted-foreground">对准屏幕、避免反光，也可以直接上传已有的截图</p>
       <div class="mt-4 grid grid-cols-2 gap-3">
         <UiButton size="lg" :disabled="busy" @click="pick('camera')">📷 拍照</UiButton>
         <UiButton size="lg" variant="outline" :disabled="busy" @click="pick('gallery')">🖼 相册</UiButton>
       </div>
-      <p class="mt-3 text-xs text-muted-foreground">
+      <p v-if="!continuing" class="mt-3 text-xs text-muted-foreground">
         没有截图？
         <button
           type="button"
@@ -169,7 +196,7 @@ async function submit() {
       </div>
     </section>
 
-    <section class="rounded-lg border border-border bg-card p-4">
+    <section v-if="!continuing" class="rounded-lg border border-border bg-card p-4">
       <label for="goal" class="text-base font-medium">第二步：老人想做什么？</label>
       <p class="mt-1 text-sm text-muted-foreground">用大白话说，不用照着按钮念</p>
       <div class="mt-3 flex flex-wrap gap-2">
@@ -218,8 +245,8 @@ async function submit() {
       <p v-if="busy" class="mb-2 text-center text-sm text-muted-foreground" aria-live="polite">
         {{ stageText }}<span v-if="stage === 'locating'">（通常 3–5 秒）</span>
       </p>
-      <UiButton size="lg" block :disabled="!canSubmit" :loading="busy" @click="submit">
-        {{ image ? '生成指路卡片' : '先拍一张屏幕' }}
+      <UiButton size="lg" block :disabled="continuing ? busy : !canSubmit" :loading="busy" @click="submit">
+        {{ continuing ? '生成下一步' : image ? '生成指路卡片' : '先拍一张屏幕' }}
       </UiButton>
       <p v-if="goalInvalid && goalLength > 100" class="mt-2 text-center text-xs text-destructive">
         需求描述最多 100 字

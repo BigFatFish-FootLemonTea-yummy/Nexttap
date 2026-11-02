@@ -89,7 +89,7 @@ onBeforeUnmount(() => {
         fit="fill"
         :breathing="true"
         :dim="true"
-        :label="`请点 ${session.result?.text ?? '红圈处'}`"
+        :label="`请点 ${session.currentStep?.text ?? '红圈处'}`"
       />
     </div>
 

@@ -1,4 +1,11 @@
-import { ApiError, type LocateIn, type LocateOut, type ScreenshotOut } from '@/types/api'
+import {
+  ApiError,
+  type AgentResult,
+  type AgentRunIn,
+  type LocateIn,
+  type LocateOut,
+  type ScreenshotOut,
+} from '@/types/api'
 
 /**
  * 默认走相对路径：开发由 Vite 代理到 127.0.0.1:8000，生产由 Nginx 同域反代。
@@ -10,6 +17,8 @@ const BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$
 /** 定位接口 p90 约 4.8s，但冷启动/反光图会更慢，前端超时放宽到 60s */
 const LOCATE_TIMEOUT_MS = 60_000
 const UPLOAD_TIMEOUT_MS = 30_000
+/** 多步最多 8 步，每步 3–5 秒，按最坏情况放宽 */
+const AGENT_TIMEOUT_MS = 150_000
 
 interface ErrorBody {
   detail?: unknown
@@ -104,6 +113,26 @@ export async function locate(input: LocateIn): Promise<LocateOut> {
   )
   if (!res.ok) throw await parseError(res)
   return (await res.json()) as LocateOut
+}
+
+/**
+ * 多步办事：把已拍的截图按顺序交给后端，返回整条链的结果。
+ *
+ * 注意它是"用全部已拍图重跑一遍"，不是增量。这样后端可以完全无状态，
+ * 代价是 n 步要调用 n 次定位（n ≤ 8）。
+ */
+export async function runAgent(input: AgentRunIn): Promise<AgentResult> {
+  const res = await fetchWithTimeout(
+    `${BASE}/api/agent/run`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    },
+    AGENT_TIMEOUT_MS,
+  )
+  if (!res.ok) throw await parseError(res)
+  return (await res.json()) as AgentResult
 }
 
 export async function health(): Promise<{ ok: boolean; model: string; llm_key_set: boolean }> {

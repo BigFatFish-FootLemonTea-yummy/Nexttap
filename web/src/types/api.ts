@@ -36,8 +36,50 @@ export interface LocateOut {
   elapsed_ms: number
 }
 
+/** 任务链里的一步（来自 data/rag/paths.jsonl） */
+export interface PathStep {
+  step: number
+  target: string
+  hint?: string
+}
+
+/** POST /api/agent/run 请求体 */
+export interface AgentRunIn {
+  goal: string
+  /** 按步骤顺序排列的截图 id（Web 用这个） */
+  image_ids?: string[]
+  /** 本地绝对路径，MCP / 调试用 */
+  image_paths?: string[]
+  task_id?: string
+}
+
+export type AgentStatus = 'done' | 'in_progress' | 'needs_retake' | 'escalated' | 'no_image'
+
+/** 多步流程里的一步结果 */
+export interface AgentStep {
+  step: number
+  text: string
+  instruction: string
+  bbox_norm: NormBox | null
+  confidence: number
+  next_step: PathStep | null
+  has_next: boolean
+}
+
+/** POST /api/agent/run 响应 */
+export interface AgentResult {
+  status: AgentStatus
+  task_id: string
+  task_name: string
+  risk: { risky: boolean; level: string; hits: string[]; advice: string }
+  steps: AgentStep[]
+  /** 每一步的决策记录，可直接渲染成"它刚才想了什么" */
+  trace: Array<Record<string, unknown> & { node: string }>
+  next_step: PathStep | null
+}
+
 /**
- * 后端错误语义（routes.py 实测，比交接文档多 4 种）：
+ * 后端错误语义（routes.py 实测）：
  * 400 格式不支持/空文件/图片无法解析；404 image_id 不存在；413 超过 8MB；
  * 422 业务拒答（detail 为字符串）或参数校验失败（detail 为数组）；500 服务端异常；502 模型返回越界编号。
  */
