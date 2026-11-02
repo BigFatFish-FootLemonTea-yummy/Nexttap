@@ -71,12 +71,12 @@ async function loadSample() {
   error.value = null
   sampleLoading.value = true
   try {
-    const res = await fetch(`${import.meta.env.BASE_URL}samples/hospital-001.jpg`)
+    const res = await fetch(`${import.meta.env.BASE_URL}samples/wechat-041.jpg`)
     if (!res.ok) throw new Error('示例图片加载失败')
     const blob = await res.blob()
     const file = new File([blob], 'sample.jpg', { type: blob.type || 'image/jpeg' })
     image.value = await compressImage(file)
-    goal.value = '我想挂个号'
+    goal.value = '我想看看儿子'
     // 先放开 busy，否则 submit 里的 canSubmit 会把自己挡住
     sampleLoading.value = false
     await submit()

@@ -15,7 +15,7 @@ from typing import Any, Dict
 from PIL import Image
 
 from ..llm.select import choose
-from .candidates import merge_lines, pad_box, to_norm
+from .candidates import expand_to_tappable, merge_lines, to_norm
 from .ocr import run_ocr
 
 
@@ -70,7 +70,7 @@ def locate_image(image_path: str, goal: str) -> Dict[str, Any]:
         return {"ok": False, "error": "模型返回了越界的候选编号"}
 
     target = candidates[index]
-    box = pad_box(target.box, width, height)
+    box = expand_to_tappable(target.box, [c.box for c in candidates], width, height)
 
     return {
         "ok": True,

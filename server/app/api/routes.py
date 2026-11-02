@@ -13,7 +13,7 @@ from PIL import Image
 from ..config import settings
 from ..llm.select import choose
 from ..schemas import LocateIn, LocateOut, ScreenshotOut
-from ..vision.candidates import merge_lines, pad_box, to_norm
+from ..vision.candidates import expand_to_tappable, merge_lines, to_norm
 from ..vision.ocr import run_ocr
 
 router = APIRouter(prefix="/api", tags=["locate"])
@@ -105,7 +105,7 @@ def locate(body: LocateIn) -> LocateOut:
         raise HTTPException(status_code=502, detail="模型返回了越界的候选编号")
 
     target = candidates[int(idx)]
-    box = pad_box(target.box, img_w, img_h)
+    box = expand_to_tappable(target.box, [c.box for c in candidates], img_w, img_h)
 
     return LocateOut(
         text=target.text,

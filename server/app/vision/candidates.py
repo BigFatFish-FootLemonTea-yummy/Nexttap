@@ -178,3 +178,41 @@ def from_norm(norm: Sequence[float], img_w: int, img_h: int) -> List[int]:
         int(round(norm[2] / 1000 * w)),
         int(round(norm[3] / 1000 * h)),
     ]
+
+
+def expand_to_tappable(
+    box: Box,
+    others: Sequence[Box],
+    img_w: int,
+    img_h: int,
+) -> Box:
+    """把"文字紧框"扩成"可点区域"。
+
+    OCR 给的是文字本身的紧框，但用户要点的是整块：
+    中文 App 宫格里图标在上、文字在下；列表里则是整行卡片。
+    只按字高外扩一点点，圈会死贴在文字上，老人会去点字。
+
+    规则：
+      - 左右各扩 0.5 倍字高
+      - 向上最多扩 1.8 倍字高（把上方的图标含进来）
+      - 但不能越过同一列里最近的元素，避免盖住上一行
+    """
+    h = box.h
+    pad_x = max(8.0, 0.5 * h)
+
+    x0 = max(0.0, box.x0 - pad_x)
+    x1 = min(float(img_w), box.x1 + pad_x)
+
+    up_edge = box.y0 - 1.8 * h
+    for other in others:
+        if other.y1 >= box.y0:
+            continue
+        # 只有水平方向有交叠才算"同一列"，否则会被旁边的元素误挡
+        if other.x1 <= x0 or other.x0 >= x1:
+            continue
+        up_edge = max(up_edge, other.y1 + 0.35 * h)
+
+    y0 = max(0.0, min(up_edge, box.y0))
+    y1 = min(float(img_h), box.y1 + 0.6 * h)
+
+    return Box(x0, y0, x1, y1)
