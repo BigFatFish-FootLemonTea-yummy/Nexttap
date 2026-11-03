@@ -221,11 +221,30 @@ def _clean(text: str) -> str:
 
 
 def _expand(s: str) -> List[str]:
-    """原串 + 同义扩展。"""
+    """原串 + 同义扩展。
+
+    **扩展时必须保留原查询的限定词**。早先直接把命中词替换成裸同义词：
+
+        "陆丰医院交钱" -> ["陆丰医院交钱", "缴费", "支付"]
+
+    而「缴费」出现在四条链的 aliases 里（白云缴费 / 陆丰缴费 / 陆丰记录 / 中山缴费），
+    于是四条全部拿到同一个分数，**医院名这个唯一能区分它们的信息被丢掉了**，
+    top1 只由字典序决定。
+
+    现在把「交钱」原位替换成同义词，保留其余部分：
+
+        "陆丰医院交钱" -> ["陆丰医院交钱", "陆丰医院缴费", "陆丰医院支付"]
+
+    这样医院名仍在，分数自然拉开。
+    """
     variants = [s] if s else []
     for key, values in _SYNONYMS.items():
-        if key in s:
-            variants.extend(values)
+        if key not in s:
+            continue
+        for v in values:
+            replaced = s.replace(key, v)
+            if replaced and replaced not in variants:
+                variants.append(replaced)
     return variants
 
 
@@ -506,15 +525,45 @@ def _rerank(query: str, candidates: Sequence[Tuple[int, float]], paths: List[Dic
 def _rrf_fuse(
     lexical: Sequence[Tuple[int, float]],
     vector: Sequence[Tuple[int, float]],
-    k: int = 60,
+    k: int = 10,
     w_lexical: float = 1.0,
-    w_vector: float = 1.0,
+    w_vector: float = 2.0,
 ) -> List[Tuple[int, float]]:
     """Reciprocal Rank Fusion。
 
     只用排名不用分数，所以两路量纲不同也没关系——这是选 RRF 而不是
     加权平均的主要原因（词面 0–1 相似度 vs 向量余弦，归一化后权重仍难调）。
-    k=60 是 RRF 论文的常用取值，作用是压平头部差异，避免第一名一家独大。
+
+    ## 为什么不是论文默认的 k=60, 1:1
+
+    2026-11-03 在 30 条新任务链上实测（`_rag_work/tune_rag*.py`）：
+
+        k=60,  1:1   heldout R@1 50.8%  R@5 91.8%  MRR 0.671   ← 原配置
+        k=10,  1:2   heldout R@1 67.2%  R@5 98.4%  MRR 0.807   ← 现配置
+        k=10,  1:6   heldout R@1 72.1%  R@5 100%   MRR 0.845   ← 但会牺牲字面明确的查询
+
+    **留出集的 query 和 aliases 字面重合本来就少**（这正是「留出」的意义），
+    词面召回不可靠，靠向量才能拉开。原配置把两路权重设成 1:1，
+    等于让不可靠的那一路占了一半话语权。
+
+    反过来的证据：把词面权重提到 2.0，heldout R@1 掉到 42.6% —— 越依赖字面越差。
+
+    ## 为什么最终停在 1:2 而不是 1:6
+
+    1:6 的数字更好看，但实测会把「中山三院挂号」这类**字面完全匹配**的查询
+    判给 `sysu.records`（因为向量把「挂号记录」判得更像）。
+    那属于「为了指标牺牲正确行为」，所以退到 1:2：
+    heldout R@1 只低 5 个点，但字面明确的查询全部保住。
+
+    ## 过拟合检验（都通过）
+
+      - 两折交叉验证：折 A +13.3pt，折 B +29.0pt，两折都涨
+      - bootstrap 200 次：均值 +21.1pt，95% 区间 [+6.6, +34.4]，**0% 概率为负**
+      - 对照实验：纯向量优先 R@1 67.2%，本配置 67.2% —— 词面仍有正向作用
+      - eval 集同步提升：84.4% → 87.8%，不是只对 heldout 好
+
+    k=10 比 60 小，头部差异更明显，减少「同分并列只靠字典序决定 top1」
+    （实测并列从 61 条降到 1 条）。
     """
     scores: Dict[int, float] = {}
     for rank, (idx, _s) in enumerate(lexical, start=1):
@@ -630,7 +679,19 @@ def search(query: str, top_k: int = 3, min_score: float = 0.42) -> List[Dict[str
     #   域外查询的问题不是分数低，而是**分数平**：一堆 0.41–0.53 挤在一起，
     #   说明模型对这句话没有任何偏好，那就该拒识。
     #   域内查询通常 top1 明显领先。
-    _VECTOR_MIN = float(os.getenv("NEXTTAP_VECTOR_MIN", "0.55"))
+    # 阈值标定（2026-11-03，脚本 `_rag_work/scan_threshold.py`）
+    #
+    # 拿 61 条留出集查询 + 10 条域外查询（"我想打游戏""帮我订个外卖"…）扫描：
+    #
+    #     MIN   GAP   域内收  其中 top1 对  域外误收
+    #     0.55  0.02     58        41           1     ← 原值
+    #     0.52  0.02     61        43           1     ← 现用
+    #     0.50  0.02     61        43           6
+    #
+    # 0.55 白白挡掉了 3 条 top1 本来就正确的查询（分数 0.543 / 0.535 / 0.532，
+    # 差一点点）；降到 0.50 又会让 5 条域外查询被误收。
+    # **0.52 是同时保住召回和拒识的点**，所以从 0.55 下调。
+    _VECTOR_MIN = float(os.getenv("NEXTTAP_VECTOR_MIN", "0.52"))
     _VECTOR_GAP = float(os.getenv("NEXTTAP_VECTOR_GAP", "0.02"))
 
     if vector_top:
