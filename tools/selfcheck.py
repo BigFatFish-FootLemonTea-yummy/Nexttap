@@ -23,8 +23,11 @@ IMAGES = ROOT / "data" / "eval" / "images"
 PATHS = ROOT / "data" / "rag" / "paths.jsonl"
 
 fails: list[str] = []
-LOW_RES_KNOWN = {"035.jpg", "051.jpg"}  # 已知低分辨率，已标 quality=bad
 warns: list[str] = []
+# 低分辨率白名单不再写死文件名（旧集是 035.jpg / 051.jpg 这种扁平命名，
+# 新集 images/ 是 <App>/<医院>/<流程>/ 分层命名，文件名会重名）。
+# 现在直接从 gt 里读 quality=bad 的行，标注了就不再报警。
+LOW_RES_KNOWN: set[str] = set()
 
 
 def ok(name: str) -> None:
@@ -46,15 +49,17 @@ print("1. 关键函数一致性")
 print("=" * 70)
 
 # 1.1 run_eval 和 eval 的 case_key 必须完全一致，否则全部匹配不上
-sample = {"file": "images/001.jpg", "task_id": "hospital.pay_bill",
-          "step": 1, "goal": "点门诊缴费"}
+#     路径用新集的分层写法，顺带验证带空格 / 方括号的目录名不会出问题
+sample = {"file": "images/Chat on WeChat/Call [Name]/Screenshot_20261102_091532.jpg",
+          "task_id": "wechat.call", "step": 1, "goal": "想给这个人打个电话"}
 if R.case_key(sample) == E.case_key(sample):
     ok("run_eval.case_key == eval.case_key")
 else:
     bad("case_key 不一致", f"{R.case_key(sample)} != {E.case_key(sample)}")
 
 # 1.2 没有 task_id 的用例也要能匹配
-plain = {"file": "images/001.jpg", "goal": "点预约挂号"}
+plain = {"file": "images/Chat on WeChat/Call [Name]/Screenshot_20261102_091532.jpg",
+         "goal": "想给这个人打个电话"}
 if R.case_key(plain) == E.case_key(plain):
     ok("无 task_id 的用例 key 一致")
 else:
@@ -189,6 +194,12 @@ if GT.exists():
         warn("没装 Pillow，跳过 bbox 越界检查", "pip install pillow")
 
     # 4.4 task_id 必须在 paths.jsonl 里存在
+    #     2026-11 换集时，新集 gt（baiyun./lufeng./sysu./wechat. 命名）一度与
+    #     旧 paths.jsonl（hospital./gov. 命名）完全无交集。现在 paths.jsonl 已
+    #     同步换成同一套 30 条链，正常情况下应当全 PASS。
+    #     但仍然保留降级逻辑，避免以后两边再次脱节时误报成错误：
+    #       - 部分找不到：新旧命名混用，报错；
+    #       - 全部找不到：两套体系彻底解耦，评测不依赖 paths.jsonl，只提醒。
     if PATHS.exists():
         valid = set()
         for line in PATHS.read_text(encoding="utf-8-sig").splitlines():
@@ -197,13 +208,19 @@ if GT.exists():
                     valid.add(json.loads(line)["task_id"])
                 except Exception:
                     pass
-        for r in rows:
-            tid = r.get("task_id")
-            if tid and tid not in valid:
-                bad(f"task_id 不在 paths.jsonl 里：{tid}",
-                    f"合法值：{sorted(valid)}")
-        if all(not r.get("task_id") or r["task_id"] in valid for r in rows):
+        gt_ids = {str(r.get("task_id") or "").strip() for r in rows} - {""}
+        unknown = sorted(gt_ids - valid)
+        known = gt_ids & valid
+        if not unknown:
             ok("所有 task_id 都能在 paths.jsonl 找到")
+        elif not known:
+            warn(f"gt 的 {len(unknown)} 个 task_id 全部不在 paths.jsonl 里",
+                 "两套任务体系互相独立，gt 与 paths.jsonl 的 task_id 命名对不上。\n"
+                 "        评测（eval.py / run_eval.py）不依赖 paths.jsonl，可以正常跑；\n"
+                 "        只有 RAG 检索侧用 paths.jsonl，如需对齐由 data/rag 的负责人处理。")
+        else:
+            bad(f"有 {len(unknown)} 个 task_id 不在 paths.jsonl 里：{unknown[:5]}",
+                f"同时有 {len(known)} 个能找到 —— 新旧命名混用了，需要统一")
 
     # 4.5 同一条链的 step 是否连续
     chains: dict[str, list[int]] = {}
@@ -220,18 +237,22 @@ if GT.exists():
             ok(f"链 {tid} 步骤连续：{uniq}")
 
     # 4.6 task_id / step 必须完整（缺了会被误算进 step=1，污染最关键指标）
-    #     2026-11-01 踩过：5 行漏填 task_id/step，被 apply_goal_map 整体跳过，
+    #     2026-11-01 踩过：5 行漏填 task_id/step，被旧版 apply_goal_map 整体跳过，
     #     既没口语化也没补身份，step 缺省成 1，虚增了 step=1 的样本。
+    #     （apply_goal_map.py 已随旧集删除，但这个检查依然必要：缺 step 会被
+    #       eval.py 的 int(row.get("step", 1) or 1) 静默默认成 1，污染指标。）
     broken = [(i, r) for i, r in enumerate(rows, 1)
               if not str(r.get("task_id") or "").strip() or r.get("step") is None]
     if broken:
         bad(f"有 {len(broken)} 行缺 task_id / step",
             "\n        ".join(f"第{i}行 {r.get('file')} {r.get('goal')!r}" for i, r in broken[:10])
-            + "\n        修法：python tools/repair_eval_data.py --dry-run")
+            + "\n        修法：python tools/repair_eval_data.py --dry-run 看报告，手工补")
     else:
         ok("所有行都有 task_id 和 step")
 
-    # 4.7 同一 bbox 不能对应多个身份（apply_goal_map 漏改会留下这种）
+    # 4.7 同一 bbox 不能对应多个身份
+    #     旧集的成因是 apply_goal_map 漏改；新集里这个检查仍然有效，
+    #     能抓出「同一个框被同时标成两条链」的复制粘贴错误。
     by_box: dict[tuple, set] = {}
     for r in rows:
         k = (r["file"], tuple(r["bbox"][:4]))
@@ -305,8 +326,9 @@ print("6. 图片体检")
 print("=" * 70)
 
 if IMAGES.exists():
-    files = sorted(p for p in IMAGES.iterdir()
-                   if p.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp"})
+    # 新集 images/ 是分层的（<App>/<医院>/<流程>/xxx.jpg），必须 rglob 递归
+    files = sorted(p for p in IMAGES.rglob("*")
+                   if p.is_file() and p.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp"})
     ok(f"共 {len(files)} 张图")
 
     # 6.1 低分辨率警告（OCR 会吃亏）
@@ -317,8 +339,8 @@ if IMAGES.exists():
             with Image.open(p) as im:
                 w, h = im.size
             # 已被标成 quality=bad 的图不再报警，因为评测时会剔除
-            if w < 800 and p.name not in LOW_RES_KNOWN:
-                low.append((p.name, w, h))
+            if w < 800 and p.relative_to(IMAGES).as_posix() not in LOW_RES_KNOWN:
+                low.append((p.relative_to(IMAGES).as_posix(), w, h))
         if low:
             warn(f"{len(low)} 张图宽度不足 800px",
                  "低分辨率会让 OCR 小字识别率下降，gate 数字会失真：" +
@@ -328,10 +350,12 @@ if IMAGES.exists():
     except ImportError:
         pass
 
-    # 6.2 未标注的图
+    # 6.2 未标注的图（按相对 images/ 的完整路径比对，不能只比文件名：
+    #     新集里 Screenshot_20261102_090114.jpg 这类文件名在 3 个目录下重名）
     if GT.exists():
         gt_files = {r["file"] for r in rows if r.get("file")}
-        unlabeled = [p.name for p in files if f"images/{p.name}" not in gt_files]
+        unlabeled = [p.relative_to(IMAGES).as_posix() for p in files
+                     if f"images/{p.relative_to(IMAGES).as_posix()}" not in gt_files]
         if unlabeled:
             warn(f"{len(unlabeled)} 张图还没标注", "前 5 个：" + ", ".join(unlabeled[:5]))
         else:

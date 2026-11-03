@@ -7,12 +7,13 @@
 每个用例单独计分。所以统计口径是【用例数】而不是【图片数】。
 
 真值文件 `data/eval/gt.jsonl`，每行一个框（同一张图、同一个目标可出现多行）：
-    {"file": "images/001.jpg", "goal": "怎么预约挂号", "bbox": [40, 700, 340, 830]}
-    {"file": "images/001.jpg", "goal": "怎么查缴费记录", "bbox": [700, 700, 1000, 830]}
-    {"file": "images/001.jpg", "goal": "怎么搜索", "bbox": [60, 40, 900, 120]}
-    {"file": "images/001.jpg", "goal": "怎么搜索", "bbox": [1100, 40, 1200, 120]}
+    {"file": "images/Chat on WeChat/Call [Name]/Screenshot_20261102_091532.jpg",
+     "task_id": "wechat.call", "step": 1, "goal": "想给这个人打个电话",
+     "bbox": [40, 700, 340, 830], "quality": "ok"}
 
-后两行是同一个目标的两个可接受入口：预测落在任意一个框里都算命中。
+    `file` 是相对 `data/eval/` 的路径。新集是分层结构
+    `images/<App>/<医院>/<流程>/xxx.jpg`，可以带空格和方括号。
+    同一个目标有多个可接受入口时会出现多行，命中任意一个框都算命中。
 
 预测文件 `data/eval/pred.jsonl`，每行一个用例：
     {"file": "images/001.jpg", "goal": "怎么预约挂号",
@@ -132,15 +133,19 @@ def case_key(row: Dict[str, Any]) -> str:
 
 
 def pretty_label(key: str) -> str:
-    """把 key 变成人看得懂的标签：001.jpg [链] 第1步 点预约挂号。"""
+    """把 key 变成人看得懂的标签：<流程>/xxx.jpg [链] 第1步 想给这个人打个电话。
+
+    新集的 file 是 images/<App>/<医院>/<流程>/xxx.jpg，层级较深，
+    标签里只保留 images/ 之后的部分，避免一行太长。
+    """
     parts = key.split("::")
     if len(parts) == 4:
         rel, tid, step, goal = parts
-        rel = rel.replace("images/", "")
+        rel = rel.replace("images/", "", 1)
         if tid:
             return f"{rel}  [{tid} 第{step}步]  {goal}"
         return f"{rel}  {goal}"
-    return key.replace("images/", "")
+    return key.replace("images/", "", 1)
 
 
 def group_gt(gt_rows: List[Dict[str, Any]]) -> "Dict[str, Dict[str, Any]]":
@@ -172,8 +177,12 @@ def group_gt(gt_rows: List[Dict[str, Any]]) -> "Dict[str, Dict[str, Any]]":
 #
 # 整链成功率衡量的是「老人能不能被一步步带完整个流程」，
 # 所以只对「有明确先后顺序的真实操作路径」有意义。以下两类要排除：
-#   1. 候选集合型：科室列表的 22 个科室，是同一屏的多个答案，不是 22 步
+#   1. 候选集合型：同一屏的多个答案（科室列表），不是多个步骤
 #   2. 跨 App 对照型：同一功能在多个 App 里的入口，用来测一致性，不是路径
+#
+# 2026-11 换集：下面的旧集 task_id（hospital.* / gov.*）已不在新集 gt.jsonl 里，
+# 保留是为了兼容用 --gt 指旧文件复算历史数字。新集 30 条链（baiyun.* /
+# lufeng.* / sysu.* / wechat.*）全部是真实多步路径，无需排除。
 # --------------------------------------------------------------------------
 CHAIN_EXCLUDE: Dict[str, str] = {
     "hospital.pick_dept": "候选集合（同一屏多个科室），非操作路径",

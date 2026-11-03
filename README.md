@@ -41,12 +41,14 @@
 │  ├─ eval.py              # 定位 hit@1 + 分阶段 + 聚类区间
 │  ├─ eval_retrieval.py    # 检索 Recall@K / MRR / 消融
 │  ├─ selfcheck.py         # 数据自检（改完先跑这个）
-│  ├─ repair_eval_data.py  # 补缺失字段 + 一致性审计
+│  ├─ repair_eval_data.py  # 一致性审计
 │  ├─ audit_goal_leak.py   # goal 泄漏审计
+│  ├─ guide_ui.py          # Web 标注界面（拖框 + 写引导话术）
+│  ├─ collect_failed.py    # 从 pred 里筛出失败用例
 │  └─ rebuild_paths.py     # 重建任务链 name/aliases
 ├─ data/
-│  ├─ eval/                # 定位评测：164 条真值 + 47 张脱敏截图
-│  └─ rag/                 # 120 条任务链 + 三套检索评测集
+│  ├─ eval/                # 定位评测：110 条真值 + 110 张脱敏截图
+│  └─ rag/                 # 30 条任务链 + 三套检索评测集
 ├─ docs/                   # 交接文档 / 技术文档 8 章 / 部署指南 / 演示速查卡
 ├─ .env.example
 └─ docker-compose.yml
@@ -91,10 +93,10 @@ python tests/test_candidates.py
 
 ---
 
-## 评测流程（gate：hit@1 ≥ 85%，47 张图 / 164 用例）
+## 评测流程（gate：hit@1 ≥ 85%，110 张图 / 110 用例）
 
 ```bash
-# 1. 截图放在 data/eval/images/（47 张已脱敏，已入库）
+# 1. 截图放在 data/eval/images/（110 张已脱敏，已入库）
 # 2. 拖框标注真值
 python tools/annotate.py
 
@@ -129,8 +131,10 @@ python tools/eval.py --ci
 - [x] 设计框架、技术选型、项目定稿
 - [x] 后端骨架：上传 / 定位 / 健康检查
 - [x] 定位管线验证脚本（`tools/`）
-- [x] 定位准确率 gate：**hit@1 89.6%（147/164）**，95% 聚类区间 [85.2%, 93.8%]；step=1 86.6%（103/119），step≥2 97.8%（44/45），整链 87.6%；时延 p50 2.7s / p90 4.0s
-  - 已做过 goal 泄漏审计并清洗：清洗前 91.5%，清洗后 89.6%，这 1.9 个点是我们主动去掉的水分（见 `docs/交接文档.md` §六）
+- [x] 定位准确率 gate：**hit@1 98.2%（108/110）**，95% 聚类区间 [95.5%, 100.0%]；step=1 **100%**（30/30），step≥2 97.5%（78/80），整链 **93.3%**（28/30）；时延 p50 3.1s / p90 4.5s
+  - 新评测集（2026-11-03）：30 条真实流程 / 110 用例 / 110 张图，覆盖微信 10 条 + 三家医院 20 条
+  - 无文字图标（加号 / 搜索镜 / 快门 / 喇叭）由 `server/app/vision/icons.py` 检测后进入候选，解决了「模型看不见按钮」导致的 422
+  - goal 泄漏已归零：step=1 共 30 条全部是用户口语，不含目标框文字（`tools/audit_goal_leak.py` 可复验）
 - [x] 前端：拍照上传 → 叠圈微调 → 全屏指路（含示例一键体验）
 - [x] MCP 服务：4 个工具（locate_element / search_guide / check_risk / compose_card）
 - [x] **RAG 三阶检索**：词面 + 向量（bge-small-zh ONNX）+ RRF，含域外拒识

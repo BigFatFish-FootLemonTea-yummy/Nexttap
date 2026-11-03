@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+import os
 import time
 import uuid
 from pathlib import Path
@@ -14,7 +16,10 @@ from ..config import settings
 from ..llm.select import choose
 from ..schemas import LocateIn, LocateOut, ScreenshotOut
 from ..vision.candidates import expand_to_tappable, merge_lines, to_norm
+from ..vision.icons import detect_icons, merge_icons_into_candidates
 from ..vision.ocr import run_ocr
+
+logger = logging.getLogger("nexttap.routes")
 
 router = APIRouter(prefix="/api", tags=["locate"])
 
@@ -92,6 +97,18 @@ def locate(body: LocateIn) -> LocateOut:
         )
 
     candidates = merge_lines(raw_candidates)
+
+    # 与 pipeline.locate_image 保持一致：把无文字图标也加进候选。
+    # 两处都要改，否则网页和 Agent 的结果会不一致（见 pipeline.py 顶部注释）。
+    if os.getenv("NEXTTAP_ICONS", "1") != "0":
+        try:
+            icons = detect_icons(str(path), candidates)
+            candidates = merge_icons_into_candidates(
+                candidates, icons, img_w=img_w, img_h=img_h
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("图标检测失败，降级为纯文字候选：%s", exc)
+
     decision = choose(candidates, body.goal, img_w, img_h)
 
     idx = decision.get("id")
@@ -105,7 +122,14 @@ def locate(body: LocateIn) -> LocateOut:
         raise HTTPException(status_code=502, detail="模型返回了越界的候选编号")
 
     target = candidates[int(idx)]
-    box = expand_to_tappable(target.box, [c.box for c in candidates], img_w, img_h)
+    # 图标候选的 text 形如 `<右上角加号按钮>`，走图标专用外扩规则
+    box = expand_to_tappable(
+        target.box,
+        [c.box for c in candidates],
+        img_w,
+        img_h,
+        is_icon=target.text.startswith("<"),
+    )
 
     return LocateOut(
         text=target.text,

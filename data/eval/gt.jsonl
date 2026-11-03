@@ -1,164 +1,157 @@
-{"file": "images/001.jpg", "task_id": "hospital.book_appointment", "step": 1, "goal": "我想挂个号", "bbox": [847, 1566, 1098, 1874], "quality": "ok"}
-{"file": "images/001.jpg", "task_id": "hospital.add_patient", "step": 1, "goal": "帮我把老伴的信息加上", "bbox": [470, 1566, 773, 1871], "quality": "ok"}
-{"file": "images/001.jpg", "task_id": "hospital.pay_bill", "step": 1, "goal": "看完病在哪儿交钱", "bbox": [848, 1919, 1099, 2227], "quality": "ok"}
-{"file": "images/001.jpg", "task_id": "hospital.manage_patient", "step": 1, "goal": "给家里人加个就诊人", "bbox": [119, 1566, 428, 1875], "quality": "ok"}
-{"file": "images/001.jpg", "task_id": "hospital.check_in", "step": 1, "goal": "到了医院要签到", "bbox": [500, 1919, 750, 2227], "quality": "ok"}
-{"file": "images/001.jpg", "task_id": "hospital.report", "step": 1, "goal": "化验单在哪看", "bbox": [143, 2336, 402, 2644], "quality": "ok"}
-{"file": "images/001.jpg", "task_id": "hospital.medical_record", "step": 1, "goal": "我的病历在哪看", "bbox": [495, 2336, 747, 2644], "quality": "ok"}
-{"file": "images/001.jpg", "task_id": "hospital.guide", "step": 1, "goal": "第一次来不知道去哪", "bbox": [844, 2374, 1100, 2644], "quality": "ok"}
-{"file": "images/001.jpg", "task_id": "hospital.elder_service", "step": 1, "goal": "给老人专用的看病通道", "bbox": [548, 1177, 710, 1277], "quality": "ok"}
-{"file": "images/001.jpg", "task_id": "hospital.profile", "step": 1, "goal": "我的账号在哪", "bbox": [822, 824, 1084, 944], "quality": "ok"}
-{"file": "images/002.jpg", "task_id": "hospital.ai_triage", "step": 1, "goal": "不知道该看什么科", "bbox": [847, 11, 1100, 320], "quality": "ok"}
-{"file": "images/002.jpg", "task_id": "hospital.invoice", "step": 1, "goal": "报销要的那个票据", "bbox": [495, 428, 750, 737], "quality": "ok"}
-{"file": "images/002.jpg", "task_id": "hospital.intro", "step": 1, "goal": "这家医院怎么样", "bbox": [850, 428, 1099, 737], "quality": "ok"}
-{"file": "images/002.jpg", "task_id": "hospital.survey", "step": 1, "goal": "给医院提意见", "bbox": [120, 466, 426, 736], "quality": "ok"}
-{"file": "images/002.jpg", "task_id": "gov.insurance_code", "step": 1, "goal": "去医院要出示的那个码", "bbox": [126, 1405, 426, 1710], "quality": "ok"}
-{"file": "images/002.jpg", "task_id": "hospital.quick_pay", "step": 1, "goal": "以后自动扣钱", "bbox": [470, 1442, 774, 1710], "quality": "ok"}
-{"file": "images/002.jpg", "task_id": "gov.insurance_ai", "step": 1, "goal": "医保的事想问个明白", "bbox": [824, 1468, 1124, 1710], "quality": "ok"}
-{"file": "images/002.jpg", "task_id": "gov.insurance_anchor", "step": 1, "goal": "哪家医院能报销", "bbox": [151, 1821, 400, 2129], "quality": "ok"}
-{"file": "images/002.jpg", "task_id": "hospital.dept_intro", "step": 1, "goal": "这个科是看什么的", "bbox": [495, 11, 751, 320], "quality": "ok"}
-{"file": "images/003.jpg", "task_id": "hospital.physical_book", "step": 1, "goal": "我想约个检查身体的", "bbox": [150, 232, 398, 500], "quality": "ok"}
-{"file": "images/003.jpg", "task_id": "hospital.physical_pay", "step": 1, "goal": "那个套餐的钱怎么付", "bbox": [848, 220, 1097, 499], "quality": "ok"}
-{"file": "images/003.jpg", "task_id": "hospital.physical_report", "step": 1, "goal": "上次查体的结果出来没", "bbox": [471, 234, 776, 499], "quality": "ok"}
-{"file": "images/003.jpg", "task_id": "hospital.deposit", "step": 1, "goal": "住院要先交多少钱", "bbox": [149, 879, 400, 1188], "quality": "ok"}
-{"file": "images/003.jpg", "task_id": "hospital.discharge_pay", "step": 1, "goal": "出院结账", "bbox": [848, 879, 1098, 1187], "quality": "ok"}
-{"file": "images/003.jpg", "task_id": "hospital.daily_bill", "step": 1, "goal": "每天花了多少钱", "bbox": [517, 879, 733, 1188], "quality": "ok"}
-{"file": "images/003.jpg", "task_id": "hospital.surgery", "step": 1, "goal": "手术做到哪一步了", "bbox": [151, 1278, 400, 1539], "quality": "ok"}
-{"file": "images/003.jpg", "task_id": "hospital.record_mail", "step": 1, "goal": "病历能寄到家吗", "bbox": [497, 1274, 748, 1539], "quality": "ok"}
-{"file": "images/004.jpg", "task_id": "hospital.online_consult", "step": 1, "goal": "在网上问问大夫", "bbox": [144, 269, 397, 533], "quality": "ok"}
-{"file": "images/004.jpg", "task_id": "hospital.doctor_team", "step": 1, "goal": "这个医生还有谁一起看", "bbox": [499, 266, 745, 532], "quality": "ok"}
-{"file": "images/004.jpg", "task_id": "hospital.my_doctor", "step": 1, "goal": "我一直看的那个大夫", "bbox": [844, 263, 1096, 532], "quality": "ok"}
-{"file": "images/004.jpg", "task_id": "hospital.medicine", "step": 1, "goal": "这个药能不能吃", "bbox": [497, 678, 745, 950], "quality": "ok"}
-{"file": "images/004.jpg", "task_id": "hospital.home_nursing", "step": 1, "goal": "护士能来家里吗", "bbox": [142, 1108, 397, 1367], "quality": "ok"}
-{"file": "images/004.jpg", "task_id": "hospital.article", "step": 1, "goal": "想看看健康知识", "bbox": [143, 684, 397, 950], "quality": "ok"}
-{"file": "images/005.jpg", "task_id": "hospital.book_appointment", "step": 2, "goal": "选神经医学科", "bbox": [71, 952, 396, 1085], "quality": "ok"}
-{"file": "images/005.jpg", "task_id": "hospital.pick_dept", "step": 1, "goal": "我头晕，该挂哪个科", "bbox": [73, 1557, 395, 1682], "quality": "ok"}
-{"file": "images/005.jpg", "task_id": "hospital.pick_dept", "step": 2, "goal": "选骨科", "bbox": [70, 2335, 231, 2472], "quality": "ok"}
-{"file": "images/005.jpg", "task_id": "hospital.pick_dept", "step": 3, "goal": "选消化内科", "bbox": [70, 2513, 341, 2629], "quality": "ok"}
-{"file": "images/005.jpg", "task_id": "hospital.pick_dept", "step": 4, "goal": "选内分泌代谢科", "bbox": [77, 2167, 449, 2280], "quality": "ok"}
-{"file": "images/010.jpg", "task_id": "hospital.pick_slot", "step": 1, "goal": "就这个科，往下走", "bbox": [458, 28, 807, 156], "quality": "ok"}
-{"file": "images/011.jpg", "task_id": "hospital.book_appointment", "step": 3, "goal": "选医生袁嘉蔚", "bbox": [516, 11, 743, 139], "quality": "ok"}
-{"file": "images/012.jpg", "task_id": "hospital.pick_doctor", "step": 1, "goal": "就找上次给我看的那个大夫", "bbox": [545, 0, 716, 118], "quality": "ok"}
-{"file": "images/013.jpg", "task_id": "hospital.book_appointment", "step": 4, "goal": "确认挂号详情", "bbox": [484, 5, 777, 133], "quality": "ok"}
-{"file": "images/014.jpg", "task_id": "hospital.add_patient", "step": 2, "goal": "点我的家人", "bbox": [212, 1744, 475, 1860], "quality": "ok"}
-{"file": "images/014.jpg", "task_id": "hospital.visit_record", "step": 1, "goal": "我想看看以前看病的记录", "bbox": [212, 755, 478, 876], "quality": "ok"}
-{"file": "images/014.jpg", "task_id": "gov.health_card", "step": 1, "goal": "去医院要刷的那张卡", "bbox": [213, 1565, 533, 1685], "quality": "ok"}
-{"file": "images/014.jpg", "task_id": "gov.real_name", "step": 1, "goal": "要证明我是我", "bbox": [213, 1925, 477, 2038], "quality": "ok"}
-{"file": "images/014.jpg", "task_id": "hospital.elder_service", "step": 2, "goal": "点长辈就医", "bbox": [216, 2313, 478, 2426], "quality": "ok"}
-{"file": "images/016.jpg", "task_id": "hospital.add_patient", "step": 3, "goal": "点添加就诊人", "bbox": [458, 1428, 805, 1536], "quality": "low", "reason": "提示文案为主的界面，可点元素只有 1 个"}
-{"file": "images/017.jpg", "task_id": "hospital.pay_pending", "step": 1, "goal": "刚才没交上的那笔", "bbox": [236, 351, 435, 463], "quality": "ok"}
-{"file": "images/017.jpg", "task_id": "hospital.pay_done", "step": 1, "goal": "已经付过了", "bbox": [825, 348, 1024, 465], "quality": "ok"}
-{"file": "images/018.jpg", "task_id": "gov.health_code", "step": 1, "goal": "政府办事那个小程序里的码", "bbox": [24, 276, 290, 393], "quality": "ok"}
-{"file": "images/018.jpg", "task_id": "gov.digital_space", "step": 1, "goal": "我的电子证件都存在哪儿", "bbox": [338, 276, 608, 393], "quality": "ok"}
-{"file": "images/018.jpg", "task_id": "gov.quick_service", "step": 1, "goal": "马上能办的那个", "bbox": [655, 276, 920, 393], "quality": "ok"}
-{"file": "images/018.jpg", "task_id": "gov.elder_mode", "step": 1, "goal": "字太小了，弄大一点", "bbox": [978, 276, 1198, 396], "quality": "ok"}
-{"file": "images/018.jpg", "task_id": "gov.social_card_query", "step": 1, "goal": "社保卡里有什么信息", "bbox": [157, 786, 574, 882], "quality": "ok"}
-{"file": "images/018.jpg", "task_id": "gov.insurance", "step": 1, "goal": "看病报销那个", "bbox": [667, 946, 887, 1225], "quality": "ok"}
-{"file": "images/018.jpg", "task_id": "gov.housing_fund", "step": 1, "goal": "买房那个钱怎么取", "bbox": [98, 1134, 293, 1235], "quality": "ok"}
-{"file": "images/019.jpg", "task_id": "gov.insurance_code", "step": 2, "goal": "点医保电子凭证", "bbox": [779, 770, 1164, 870], "quality": "ok"}
-{"file": "images/019.jpg", "task_id": "gov.insurance_balance", "step": 1, "goal": "我卡里还有多少钱", "bbox": [121, 1530, 533, 1639], "quality": "ok"}
-{"file": "images/030.jpg", "task_id": "gov.insurance_code", "step": 3, "goal": "点医保电子凭证", "bbox": [781, 1023, 1167, 1135], "quality": "ok"}
-{"file": "images/030.jpg", "task_id": "gov.insurance_pay", "step": 1, "goal": "看完病用医保结账", "bbox": [922, 1824, 1120, 2044], "quality": "ok"}
-{"file": "images/030.jpg", "task_id": "gov.cross_region", "step": 2, "goal": "点异地就医信息", "bbox": [213, 1023, 599, 1135], "quality": "ok"}
-{"file": "images/026.jpg", "task_id": "gov.social_security", "step": 1, "goal": "我交了几年社保了", "bbox": [729, 801, 1072, 897], "quality": "ok"}
-{"file": "images/026.jpg", "task_id": "gov.social_cert", "step": 1, "goal": "要开社保证明", "bbox": [123, 1126, 386, 1242], "quality": "ok"}
-{"file": "images/026.jpg", "task_id": "gov.unemployment", "step": 1, "goal": "没工作了要登记", "bbox": [868, 1437, 1136, 1569], "quality": "ok"}
-{"file": "images/023.jpg", "task_id": "gov.insurance", "step": 2, "goal": "点医保", "bbox": [417, 346, 519, 514], "quality": "ok"}
-{"file": "images/023.jpg", "task_id": "gov.housing_fund", "step": 2, "goal": "点公积金", "bbox": [114, 802, 280, 999], "quality": "ok"}
-{"file": "images/025.jpg", "task_id": "gov.driving", "step": 1, "goal": "驾照到期了要换证", "bbox": [90, 782, 304, 979], "quality": "ok"}
-{"file": "images/025.jpg", "task_id": "gov.exit_entry", "step": 1, "goal": "办护照要预约", "bbox": [402, 777, 571, 977], "quality": "ok"}
-{"file": "images/025.jpg", "task_id": "gov.market_supervise", "step": 1, "goal": "投诉商家", "bbox": [380, 284, 592, 482], "quality": "ok"}
-{"file": "images/041.jpg", "task_id": "wechat.video_call_son", "step": 1, "goal": "我想看看儿子", "bbox": [8, 434, 1252, 610], "quality": "ok"}
-{"file": "images/041.jpg", "task_id": "wechat.open_chat", "step": 1, "goal": "最上面那个人的消息", "bbox": [8, 0, 1252, 162], "quality": "ok"}
-{"file": "images/042.jpg", "task_id": "wechat.video_call_son", "step": 2, "goal": "确认当前聊天", "bbox": [520, 8, 726, 129], "quality": "ok"}
-{"file": "images/043.jpg", "task_id": "wechat.video_call_son", "step": 2, "goal": "点视频通话", "bbox": [683, 368, 867, 571], "quality": "ok"}
-{"file": "images/043.jpg", "task_id": "wechat.send_photo", "step": 1, "goal": "把照片发过去", "bbox": [138, 362, 251, 574], "quality": "ok"}
-{"file": "images/043.jpg", "task_id": "wechat.take_photo", "step": 1, "goal": "现拍一张", "bbox": [428, 362, 542, 574], "quality": "ok"}
-{"file": "images/043.jpg", "task_id": "wechat.transfer", "step": 1, "goal": "给他转点钱", "bbox": [718, 702, 833, 921], "quality": "ok"}
-{"file": "images/043.jpg", "task_id": "wechat.red_packet", "step": 1, "goal": "给孙子点零花钱", "bbox": [136, 703, 252, 921], "quality": "ok"}
-{"file": "images/043.jpg", "task_id": "wechat.share_location", "step": 1, "goal": "告诉他我在哪儿", "bbox": [1008, 353, 1121, 572], "quality": "ok"}
-{"file": "images/043.jpg", "task_id": "wechat.voice_input", "step": 1, "goal": "我说话它自己打字", "bbox": [972, 703, 1156, 919], "quality": "ok"}
-{"file": "images/044.jpg", "task_id": "wechat.video_call_son", "step": 3, "goal": "选视频通话", "bbox": [501, 695, 760, 815], "quality": "ok"}
-{"file": "images/044.jpg", "task_id": "wechat.voice_call_son", "step": 1, "goal": "打电话过去", "bbox": [500, 877, 758, 990], "quality": "ok"}
-{"file": "images/045.jpg", "task_id": "wechat.live_location", "step": 1, "goal": "让对方看到我在哪", "bbox": [445, 844, 807, 952], "quality": "ok"}
-{"file": "images/045.jpg", "task_id": "wechat.share_location", "step": 2, "goal": "选发送位置", "bbox": [498, 665, 756, 774], "quality": "ok"}
-{"file": "images/050.jpg", "task_id": "wechat.open_wechat", "step": 1, "goal": "打开聊天那个绿图标", "bbox": [505, 0, 754, 128], "quality": "low", "reason": "微信顶栏截图，画面只有一条，可点元素极少"}
-{"file": "images/040.jpg", "task_id": "map.taxi", "step": 1, "goal": "叫个车", "bbox": [391, 184, 579, 442], "quality": "ok"}
-{"file": "images/040.jpg", "task_id": "map.transit", "step": 1, "goal": "坐公交还是坐地铁", "bbox": [85, 185, 310, 442], "quality": "ok"}
-{"file": "images/040.jpg", "task_id": "map.carpool", "step": 1, "goal": "搭个顺路的车", "bbox": [969, 184, 1157, 441], "quality": "ok"}
-{"file": "images/040.jpg", "task_id": "map.subway_map", "step": 1, "goal": "看看地铁怎么坐", "bbox": [130, 1092, 279, 1248], "quality": "ok"}
-{"file": "images/040.jpg", "task_id": "map.bus_live", "step": 1, "goal": "公交车到哪了", "bbox": [324, 1093, 512, 1247], "quality": "ok"}
-{"file": "images/049.jpg", "task_id": "map.subway_qr", "step": 2, "goal": "点广州地铁乘车码", "bbox": [283, 552, 686, 644], "quality": "ok"}
-{"file": "images/049.jpg", "task_id": "map.subway_qr", "step": 3, "goal": "点刷码乘车", "bbox": [764, 1469, 991, 1565], "quality": "ok"}
-{"file": "images/006.jpg", "task_id": "hospital.pick_dept", "step": 5, "goal": "选肝病内科", "bbox": [71, 958, 336, 1075], "quality": "ok"}
-{"file": "images/006.jpg", "task_id": "hospital.pick_dept", "step": 6, "goal": "选泌尿外科", "bbox": [67, 1127, 337, 1260], "quality": "ok"}
-{"file": "images/006.jpg", "task_id": "hospital.pick_dept", "step": 7, "goal": "选胸外科", "bbox": [68, 1732, 282, 1861], "quality": "ok"}
-{"file": "images/006.jpg", "task_id": "hospital.pick_dept", "step": 8, "goal": "选老年病科", "bbox": [71, 2518, 335, 2632], "quality": "ok"}
-{"file": "images/006.jpg", "task_id": "hospital.pick_dept", "step": 9, "goal": "选儿科门诊", "bbox": [72, 2097, 415, 2210], "quality": "ok"}
-{"file": "images/007.jpg", "task_id": "hospital.pick_dept", "step": 10, "goal": "选口腔科", "bbox": [73, 1028, 285, 1157], "quality": "ok"}
-{"file": "images/007.jpg", "task_id": "hospital.pick_dept", "step": 11, "goal": "选眼科", "bbox": [70, 1206, 232, 1339], "quality": "ok"}
-{"file": "images/007.jpg", "task_id": "hospital.pick_dept", "step": 12, "goal": "选耳鼻咽喉科", "bbox": [73, 1391, 392, 1507], "quality": "ok"}
-{"file": "images/007.jpg", "task_id": "hospital.pick_dept", "step": 13, "goal": "选精神心理科", "bbox": [73, 1810, 395, 1934], "quality": "ok"}
-{"file": "images/007.jpg", "task_id": "hospital.pick_dept", "step": 14, "goal": "选营养科", "bbox": [71, 2341, 287, 2477], "quality": "ok"}
-{"file": "images/008.jpg", "task_id": "hospital.pick_dept", "step": 15, "goal": "选发热门诊", "bbox": [73, 1863, 340, 1992], "quality": "ok"}
-{"file": "images/008.jpg", "task_id": "hospital.pick_dept", "step": 16, "goal": "选肠道门诊", "bbox": [74, 2044, 337, 2164], "quality": "ok"}
-{"file": "images/008.jpg", "task_id": "hospital.pick_dept", "step": 17, "goal": "选药学服务门诊", "bbox": [73, 2222, 450, 2346], "quality": "ok"}
-{"file": "images/009.jpg", "task_id": "hospital.dept_detail", "step": 1, "goal": "这个科都看些什么病", "bbox": [547, 2439, 713, 2559], "quality": "ok"}
-{"file": "images/015.jpg", "task_id": "hospital.no_card", "step": 1, "goal": "我还没有卡", "bbox": [965, 392, 1190, 497], "quality": "ok"}
-{"file": "images/015.jpg", "task_id": "hospital.bind_card", "step": 1, "goal": "把卡绑上去", "bbox": [553, 2168, 706, 2292], "quality": "ok"}
-{"file": "images/015.jpg", "task_id": "hospital.pick_id_type", "step": 1, "goal": "用身份证", "bbox": [331, 746, 667, 859], "quality": "ok"}
-{"file": "images/020.jpg", "task_id": "gov.insurance_resident", "step": 1, "goal": "我是农村户口那个医保", "bbox": [207, 276, 539, 372], "quality": "ok"}
-{"file": "images/020.jpg", "task_id": "gov.insurance_flex", "step": 1, "goal": "我自己交社保的", "bbox": [674, 283, 1097, 367], "quality": "ok"}
-{"file": "images/020.jpg", "task_id": "gov.insurance_pay_fee", "step": 1, "goal": "居民医保的钱该交了", "bbox": [120, 486, 597, 575], "quality": "ok"}
-{"file": "images/020.jpg", "task_id": "gov.local_medical", "step": 1, "goal": "就在本地看病", "bbox": [170, 927, 407, 1027], "quality": "ok"}
-{"file": "images/020.jpg", "task_id": "gov.cross_region", "step": 1, "goal": "在外地看病怎么弄", "bbox": [512, 927, 749, 1027], "quality": "ok"}
-{"file": "images/020.jpg", "task_id": "gov.reimbursement", "step": 1, "goal": "看病花的钱报回来", "bbox": [854, 927, 1089, 1027], "quality": "ok"}
-{"file": "images/020.jpg", "task_id": "gov.hospital_query", "step": 1, "goal": "哪家医院能刷医保", "bbox": [119, 1133, 449, 1230], "quality": "ok"}
-{"file": "images/021.jpg", "task_id": "gov.login_face", "step": 1, "goal": "刷脸登录", "bbox": [163, 734, 556, 851], "quality": "ok"}
-{"file": "images/021.jpg", "task_id": "gov.login_wechat_police", "step": 1, "goal": "用公安那个认证", "bbox": [158, 1073, 438, 1193], "quality": "ok"}
-{"file": "images/021.jpg", "task_id": "gov.login_next", "step": 1, "goal": "继续往下走", "bbox": [526, 2118, 738, 2247], "quality": "ok"}
-{"file": "images/022.jpg", "task_id": "gov.face_verify", "step": 1, "goal": "让我对着脸照一下", "bbox": [388, 2030, 874, 2146], "quality": "ok"}
-{"file": "images/024.jpg", "task_id": "gov.disability", "step": 1, "goal": "残疾人能领什么补贴", "bbox": [134, 304, 260, 499], "quality": "ok"}
-{"file": "images/024.jpg", "task_id": "gov.legal_service", "step": 1, "goal": "想找律师问问", "bbox": [668, 300, 880, 499], "quality": "ok"}
-{"file": "images/024.jpg", "task_id": "gov.social_relief", "step": 1, "goal": "困难了能申请补助吗", "bbox": [956, 550, 1169, 743], "quality": "ok"}
-{"file": "images/024.jpg", "task_id": "gov.utility_pay", "step": 1, "goal": "水电费在哪儿交", "bbox": [90, 1282, 303, 1485], "quality": "ok"}
-{"file": "images/024.jpg", "task_id": "gov.medical_service", "step": 1, "goal": "我要去看病", "bbox": [1001, 1287, 1126, 1483], "quality": "ok"}
-{"file": "images/027.jpg", "task_id": "gov.pension_query", "step": 1, "goal": "我那个养老保险交了多少", "bbox": [51, 376, 1032, 485], "quality": "ok"}
-{"file": "images/027.jpg", "task_id": "gov.work_injury", "step": 1, "goal": "工伤那部分信息要改", "bbox": [52, 1258, 797, 1362], "quality": "ok"}
-{"file": "images/027.jpg", "task_id": "gov.unemployment_change", "step": 1, "goal": "失业金的信息要改", "bbox": [52, 1456, 795, 1561], "quality": "ok"}
-{"file": "images/028.jpg", "task_id": "gov.start_service", "step": 1, "goal": "可以开始了", "bbox": [498, 2146, 765, 2263], "quality": "ok"}
-{"file": "images/029.jpg", "task_id": "gov.pension_proof", "step": 1, "goal": "退休金证明怎么开", "bbox": [52, 352, 557, 461], "quality": "ok"}
-{"file": "images/029.jpg", "task_id": "gov.social_cert_query", "step": 1, "goal": "单位要我交的证明", "bbox": [52, 556, 676, 657], "quality": "ok"}
-{"file": "images/029.jpg", "task_id": "gov.rights_record", "step": 1, "goal": "我的参保记录", "bbox": [52, 1029, 380, 1142], "quality": "ok"}
-{"file": "images/031.jpg", "task_id": "hospital.book_appointment", "step": 2, "goal": "点专家号预约", "bbox": [277, 150, 527, 247], "quality": "ok"}
-{"file": "images/031.jpg", "task_id": "hospital.rx_pay", "step": 1, "goal": "药费在哪儿交", "bbox": [869, 156, 1158, 240], "quality": "ok"}
-{"file": "images/031.jpg", "task_id": "hospital.card_manage", "step": 1, "goal": "我的就诊卡在哪", "bbox": [869, 434, 1120, 523], "quality": "ok"}
-{"file": "images/031.jpg", "task_id": "hospital.deposit", "step": 2, "goal": "点押金预交", "bbox": [92, 1713, 304, 1805], "quality": "ok"}
-{"file": "images/031.jpg", "task_id": "hospital.daily_bill", "step": 2, "goal": "点住院日清单", "bbox": [361, 1714, 610, 1803], "quality": "ok"}
-{"file": "images/032.jpg", "task_id": "hospital.pick_dept", "step": 18, "goal": "选急诊科", "bbox": [545, 333, 747, 453], "quality": "ok"}
-{"file": "images/032.jpg", "task_id": "hospital.book_notice", "step": 1, "goal": "挂号前有什么要注意的", "bbox": [495, 525, 762, 645], "quality": "ok"}
-{"file": "images/032.jpg", "task_id": "hospital.pick_dept", "step": 19, "goal": "选内科", "bbox": [16, 667, 165, 787], "quality": "ok"}
-{"file": "images/032.jpg", "task_id": "hospital.pick_dept", "step": 20, "goal": "选外科", "bbox": [15, 834, 165, 954], "quality": "ok"}
-{"file": "images/032.jpg", "task_id": "hospital.pick_dept", "step": 21, "goal": "选儿科", "bbox": [14, 1394, 169, 1518], "quality": "ok"}
-{"file": "images/033.jpg", "task_id": "hospital.book_guide", "step": 1, "goal": "挂号怎么弄", "bbox": [951, 162, 1175, 259], "quality": "ok"}
-{"file": "images/033.jpg", "task_id": "hospital.expand_doctor", "step": 1, "goal": "还有别的医生吗", "bbox": [512, 670, 652, 782], "quality": "ok"}
-{"file": "images/033.jpg", "task_id": "hospital.pick_morning", "step": 1, "goal": "想早点去", "bbox": [82, 1125, 223, 1238], "quality": "ok"}
-{"file": "images/036.jpg", "task_id": "gov.social_scan", "step": 1, "goal": "扫个码", "bbox": [69, 415, 244, 520], "quality": "ok"}
-{"file": "images/036.jpg", "task_id": "gov.family_service", "step": 1, "goal": "帮我儿子也弄一下", "bbox": [683, 421, 891, 514], "quality": "ok"}
-{"file": "images/036.jpg", "task_id": "gov.elder_mode", "step": 2, "goal": "点长辈版", "bbox": [1017, 416, 1190, 517], "quality": "ok"}
-{"file": "images/036.jpg", "task_id": "gov.rights_query", "step": 1, "goal": "我社保交了多少年", "bbox": [83, 2035, 500, 2132], "quality": "ok"}
-{"file": "images/036.jpg", "task_id": "gov.pension", "step": 1, "goal": "退休金那个", "bbox": [371, 1244, 594, 1348], "quality": "ok"}
-{"file": "images/036.jpg", "task_id": "gov.social_card_service", "step": 1, "goal": "社保卡丢了要补办", "bbox": [641, 1250, 906, 1342], "quality": "ok"}
-{"file": "images/037.jpg", "task_id": "gov.my_social_card", "step": 1, "goal": "我的卡在哪儿看", "bbox": [193, 691, 497, 800], "quality": "ok"}
-{"file": "images/037.jpg", "task_id": "gov.tax", "step": 1, "goal": "交税那个", "bbox": [43, 1012, 184, 1113], "quality": "ok"}
-{"file": "images/037.jpg", "task_id": "gov.suihaoban", "step": 1, "goal": "广州本地办事的那个", "bbox": [192, 1195, 488, 1311], "quality": "ok"}
-{"file": "images/038.jpg", "task_id": "hospital.enter_app", "step": 1, "goal": "白云区那家医院", "bbox": [195, 594, 677, 687], "quality": "ok"}
-{"file": "images/038.jpg", "task_id": "hospital.enter_other", "step": 1, "goal": "陆丰那家医院", "bbox": [200, 764, 610, 857], "quality": "ok"}
-{"file": "images/039.jpg", "task_id": "gov.enter_yueshengshi", "step": 1, "goal": "手机上办政务的那个入口", "bbox": [130, 946, 307, 1055], "quality": "ok"}
-{"file": "images/039.jpg", "task_id": "map.subway_qr", "step": 1, "goal": "进地铁站要刷的", "bbox": [677, 1634, 855, 1735], "quality": "ok"}
-{"file": "images/048.jpg", "task_id": "gov.elder_mode", "step": 3, "goal": "点关怀版", "bbox": [992, 186, 1184, 412], "quality": "ok"}
-{"file": "images/048.jpg", "task_id": "gov.health_code", "step": 2, "goal": "点粤省事码", "bbox": [39, 180, 276, 407], "quality": "ok"}
-{"file": "images/048.jpg", "task_id": "gov.digital_space", "step": 2, "goal": "点数字空间", "bbox": [352, 183, 594, 407], "quality": "ok"}
-{"file": "images/048.jpg", "task_id": "gov.promo", "step": 1, "goal": "有什么活动", "bbox": [447, 1493, 814, 1657], "quality": "ok"}
-{"file": "images/034.jpg", "task_id": "hospital.book_guide", "step": 2, "goal": "点挂号指引", "bbox": [951, 172, 1176, 272], "quality": "ok"}
-{"file": "images/034.jpg", "task_id": "hospital.pick_date", "step": 1, "goal": "想约周末", "bbox": [192, 332, 345, 452], "quality": "ok"}
+{"file": "images/Chat on WeChat/Call [Name]/Screenshot_20261102_091540.jpg", "goal": "选通话类型", "bbox": [8, 2425, 1252, 2595], "task_id": "wechat.call", "step": 3}
+{"file": "images/Chat on WeChat/Call [Name]/Screenshot_20261102_091540.jpg", "goal": "选通话类型", "bbox": [8, 2235, 1252, 2415], "task_id": "wechat.call", "step": 3}
+{"file": "images/Chat on WeChat/Call [Name]/Screenshot_20261102_091635.jpg", "goal": "想给这个人打个电话", "bbox": [1143, 2670, 1226, 2753], "task_id": "wechat.call", "step": 1}
+{"file": "images/Chat on WeChat/Open Chat with [Name]/Screenshot_20261102_090846.jpg", "goal": "输入需要打开的人昵称", "bbox": [126, 158, 1209, 308], "task_id": "wechat.open_chat_v2", "step": 2}
+{"file": "images/Chat on WeChat/Open Chat with [Name]/Screenshot_20261102_090852.jpg", "goal": "点击选择弹出的联系人中词义最贴近的，进入聊天", "bbox": [20, 360, 1240, 620], "task_id": "wechat.open_chat_v2", "step": 3}
+{"file": "images/Chat on WeChat/Pay with WeChat Pay/Scan to Pay/Screenshot_20261102_092658.jpg", "goal": "想扫码付钱", "bbox": [1141, 170, 1203, 232], "task_id": "wechat.pay_scan", "step": 1}
+{"file": "images/Chat on WeChat/Pay with WeChat Pay/Scan to Pay/Screenshot_20261102_092703.jpg", "goal": "点扫一扫", "bbox": [771, 654, 1242, 830], "task_id": "wechat.pay_scan", "step": 2}
+{"file": "images/Chat on WeChat/Pay with WeChat Pay/Show QR code to Pay/Screenshot_20261102_093740.jpg", "goal": "点收付款", "bbox": [771, 832, 1242, 1008], "task_id": "wechat.pay_qr", "step": 2}
+{"file": "images/Chat on WeChat/Send Friend Request/With Phone Number/IMG_20261102_093109.jpg", "goal": "点添加到通讯录", "bbox": [0, 1111, 1260, 1286], "task_id": "wechat.friend_phone", "step": 5}
+{"file": "images/Chat on WeChat/Send Friend Request/With Phone Number/Screenshot_20261102_092911.jpg", "goal": "想用手机号加个好友", "bbox": [1141, 170, 1203, 232], "task_id": "wechat.friend_phone", "step": 1}
+{"file": "images/Chat on WeChat/Send Friend Request/With Phone Number/Screenshot_20261102_092915.jpg", "goal": "点添加朋友", "bbox": [771, 476, 1242, 652], "task_id": "wechat.friend_phone", "step": 2}
+{"file": "images/Chat on WeChat/Send Friend Request/With Phone Number/Screenshot_20261102_092931.jpg", "goal": "点搜索栏", "bbox": [63, 294, 1196, 398], "task_id": "wechat.friend_phone", "step": 3}
+{"file": "images/Chat on WeChat/Send Friend Request/With Phone Number/Screenshot_20261102_093001.jpg", "goal": "输入手机号", "bbox": [100, 150, 900, 260], "task_id": "wechat.friend_phone", "step": 4}
+{"file": "images/Chat on WeChat/Send Friend Request/With Phone Number/Screenshot_20261102_093126.jpg", "goal": "点发送", "bbox": [340, 2498, 919, 2648], "task_id": "wechat.friend_phone", "step": 6}
+{"file": "images/Chat on WeChat/Send Friend Request/With QR  code/Display QR Code to Add Friend/Screenshot_20261102_092911.jpg", "goal": "想让人加我好友", "bbox": [1141, 170, 1203, 232], "task_id": "wechat.friend_qr_show", "step": 1}
+{"file": "images/Chat on WeChat/Send Friend Request/With QR  code/Display QR Code to Add Friend/Screenshot_20261102_092915.jpg", "goal": "点添加朋友", "bbox": [771, 476, 1242, 652], "task_id": "wechat.friend_qr_show", "step": 2}
+{"file": "images/Chat on WeChat/Send Friend Request/With QR  code/Scan to Add/Screenshot_20261102_094040.jpg", "goal": "想扫一下加好友", "bbox": [1141, 170, 1203, 232], "task_id": "wechat.friend_qr_scan", "step": 1}
+{"file": "images/Chat on WeChat/Send Friend Request/With QR  code/Scan to Add/Screenshot_20261102_094044.jpg", "goal": "点扫一扫", "bbox": [771, 654, 1242, 830], "task_id": "wechat.friend_qr_scan", "step": 2}
+{"file": "images/Chat on WeChat/Send Voice Message/Screenshot_20261102_090930.jpg", "goal": "想发条语音过去", "bbox": [151, 2620, 982, 2778], "task_id": "wechat.voice_msg", "step": 1}
+{"file": "images/Chat on WeChat/Send Voice Message/Screenshot_20261102_091239.jpg", "goal": "长按说话", "bbox": [400, 2540, 860, 2680], "task_id": "wechat.voice_msg", "step": 2}
+{"file": "images/Chat on WeChat/Share Location/Screenshot_20261102_092106.jpg", "goal": "告诉他我在哪儿", "bbox": [1143, 2592, 1226, 2675], "task_id": "wechat.share_location_v2", "step": 1}
+{"file": "images/Chat on WeChat/Share Location/Screenshot_20261102_092111.jpg", "goal": "点击功能栏中的 位置 拉起选择栏", "bbox": [980, 1960, 1150, 2180], "task_id": "wechat.share_location_v2", "step": 2}
+{"file": "images/Chat on WeChat/Share Location/Screenshot_20261102_092118.jpg", "goal": "点击选择栏中的 发送位置", "bbox": [0, 2243, 1260, 2419], "task_id": "wechat.share_location_v2", "step": 3}
+{"file": "images/Chat on WeChat/Take and Send a Photo/Screenshot_20261102_091815.jpg", "goal": "想拍张照片发过去", "bbox": [1143, 2670, 1226, 2753], "task_id": "wechat.take_photo_v2", "step": 1}
+{"file": "images/Chat on WeChat/Take and Send a Photo/Screenshot_20261102_091823.jpg", "goal": "点击功能栏中的 拍摄", "bbox": [400, 1960, 570, 2180], "task_id": "wechat.take_photo_v2", "step": 2}
+{"file": "images/Chat on WeChat/Take and Send a Photo/Screenshot_20261102_091905.jpg", "goal": "点击右下角的 完成", "bbox": [984, 2427, 1183, 2543], "task_id": "wechat.take_photo_v2", "step": 4}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Add Patient/Screenshot_20261101_194542.jpg", "goal": "帮家里人把就诊信息加上", "bbox": [455, 1880, 790, 2010], "task_id": "baiyun.add_patient", "step": 1}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Add Patient/Screenshot_20261101_195503.jpg", "goal": "点+添加就诊人", "bbox": [126, 2451, 1133, 2601], "task_id": "baiyun.add_patient", "step": 2}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Add Patient/Screenshot_20261101_195508.jpg", "goal": "填写姓名、手机号码、市区街、现住址，并勾选隐私保护指引", "bbox": [40, 560, 1220, 2260], "task_id": "baiyun.add_patient", "step": 3}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Add Patient/Screenshot_20261101_195508.jpg", "goal": "填写姓名、手机号码、市区街、现住址，并勾选隐私保护指引", "bbox": [51, 2289, 1208, 2435], "task_id": "baiyun.add_patient", "step": 3}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Add Patient/Screenshot_20261101_195519.jpg", "goal": "点绑定", "bbox": [51, 2289, 1208, 2435], "task_id": "baiyun.add_patient", "step": 4}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Appointment Booking/Screenshot_20261101_194542.jpg", "goal": "我想挂个号", "bbox": [840, 1850, 1110, 2000], "task_id": "baiyun.book", "step": 1}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Appointment Booking/Screenshot_20261101_194542.jpg", "goal": "我想挂个号", "bbox": [820, 1730, 1130, 2000], "task_id": "baiyun.book", "step": 1}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Appointment Booking/Screenshot_20261101_194542.jpg", "goal": "我想挂个号", "bbox": [790, 1740, 1150, 2000], "task_id": "baiyun.book", "step": 1}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Appointment Booking/Screenshot_20261101_194844.jpg", "goal": "点骨科", "bbox": [10, 2445, 300, 2610], "task_id": "baiyun.book", "step": 2}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Appointment Booking/Screenshot_20261101_194853.jpg", "goal": "点骨科门诊", "bbox": [560, 705, 1240, 860], "task_id": "baiyun.book", "step": 3}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Appointment Booking/Screenshot_20261101_194903.jpg", "goal": "点门诊号", "bbox": [40, 450, 700, 730], "task_id": "baiyun.book", "step": 4}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Appointment Booking/Screenshot_20261101_194925.jpg", "goal": "点05", "bbox": [845, 420, 970, 555], "task_id": "baiyun.book", "step": 5}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Appointment Booking/Screenshot_20261101_194929.jpg", "goal": "点李建生", "bbox": [340, 630, 520, 735], "task_id": "baiyun.book", "step": 6}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Appointment Booking/Screenshot_20261101_194940.jpg", "goal": "点08:30-09:00", "bbox": [490, 2465, 820, 2560], "task_id": "baiyun.book", "step": 7}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Appointment Booking/Screenshot_20261101_195004.jpg", "goal": "核对就诊人和金额后点击「去支付」完成挂号", "bbox": [844, 2647, 1260, 2800], "task_id": "baiyun.book", "step": 8}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Open Medical Mini Program/Screenshot_20261101_194146.jpg", "goal": "输入白云区人民医院", "bbox": [30, 530, 500, 640], "task_id": "baiyun.open_app", "step": 2}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Outpatient Payment/IMG_20261102_085217.jpg", "goal": "核对就诊人和金额后点击「去支付」完成缴费", "bbox": [38, 1401, 860, 1508], "task_id": "baiyun.pay", "step": 2}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Outpatient Payment/Screenshot_20261102_083515.jpg", "goal": "看完病想交钱", "bbox": [830, 2295, 1110, 2430], "task_id": "baiyun.pay", "step": 1}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Show Medical Insurance Code/Path1/Screenshot_20261102_085618.jpg", "goal": "在「即将打开我的医保凭证小程序」弹窗中点击「允许」", "bbox": [640, 1460, 1180, 1645], "task_id": "baiyun.insurance_path1", "step": 2}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Show Medical Insurance Code/Path1/Screenshot_20261102_085627.jpg", "goal": "在隐私保护提示中点击「同意并继续」", "bbox": [67, 2373, 1193, 2533], "task_id": "baiyun.insurance_path1", "step": 3}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Show Medical Insurance Code/Path1/Screenshot_20261102_085639.jpg", "goal": "点刷医保码", "bbox": [94, 729, 1168, 887], "task_id": "baiyun.insurance_path1", "step": 4}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Show Medical Insurance Code/Path1/Screenshot_2026_1102_085516.jpg", "goal": "去医院要出示医保码", "bbox": [140, 4440, 420, 4640], "task_id": "baiyun.insurance_path1", "step": 1}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Show Medical Insurance Code/Path2/Screenshot_20261102_090228.jpg", "goal": "输入医保电子凭证", "bbox": [40, 650, 700, 790], "task_id": "baiyun.insurance_path2", "step": 2}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Show Medical Insurance Code/Path2/Screenshot_20261102_090323.jpg", "goal": "点我的医保凭证", "bbox": [220, 690, 660, 800], "task_id": "baiyun.insurance_path2", "step": 3}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Show Medical Insurance Code/Path2/Screenshot_20261102_090403.jpg", "goal": "点刷医保码", "bbox": [94, 729, 1168, 887], "task_id": "baiyun.insurance_path2", "step": 4}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/View Visit Records/Screenshot_20261102_082850.jpg", "goal": "点就诊记录", "bbox": [60, 850, 700, 1000], "task_id": "baiyun.records", "step": 2}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/View Visit Records/Screenshot_20261102_082950.jpg", "goal": "点击某条记录查看订单详情", "bbox": [40, 940, 1220, 1130], "task_id": "baiyun.records", "step": 3}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Add Patient/Screenshot_20261102_100850.jpg", "goal": "点就诊人管理", "bbox": [850, 405, 1195, 495], "task_id": "lufeng.add_patient", "step": 2}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Add Patient/Screenshot_20261102_101114.jpg", "goal": "点添加就诊人", "bbox": [53, 2559, 1203, 2719], "task_id": "lufeng.add_patient", "step": 3}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Add Patient/Screenshot_20261102_101122.jpg", "goal": "填写患者姓名、患者类型、证件类型、证件号、联系电话后点击「确认绑卡」", "bbox": [40, 560, 1220, 2560], "task_id": "lufeng.add_patient", "step": 4}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Add Patient/Screenshot_20261102_101122.jpg", "goal": "填写患者姓名、患者类型、证件类型、证件号、联系电话后点击「确认绑卡」", "bbox": [53, 2559, 1203, 2719], "task_id": "lufeng.add_patient", "step": 4}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Appointment Booking/IMG_20261102_095911.jpg", "goal": "我想挂个号", "bbox": [58, 570, 615, 770], "task_id": "lufeng.book", "step": 1}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Appointment Booking/IMG_20261102_095911.jpg", "goal": "我想挂个号", "bbox": [100, 1200, 720, 1360], "task_id": "lufeng.book", "step": 1}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Appointment Booking/IMG_20261102_095911.jpg", "goal": "我想挂个号", "bbox": [90, 1760, 300, 1860], "task_id": "lufeng.book", "step": 1}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Appointment Booking/Screenshot_20261102_095952.jpg", "goal": "阅读后点击「确定」关闭须知", "bbox": [151, 2021, 1109, 2167], "task_id": "lufeng.book", "step": 2}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Appointment Booking/Screenshot_20261102_095957.jpg", "goal": "点外科", "bbox": [8, 968, 300, 1096], "task_id": "lufeng.book", "step": 3}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Appointment Booking/Screenshot_20261102_100012.jpg", "goal": "点骨外科", "bbox": [525, 856, 800, 1018], "task_id": "lufeng.book", "step": 4}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Appointment Booking/Screenshot_20261102_100021.jpg", "goal": "点05", "bbox": [825, 618, 1045, 790], "task_id": "lufeng.book", "step": 5}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Appointment Booking/Screenshot_20261102_100024.jpg", "goal": "点罗小东", "bbox": [70, 1020, 900, 1190], "task_id": "lufeng.book", "step": 6}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Appointment Booking/Screenshot_20261102_100115.jpg", "goal": "核对挂号信息后点击「确认挂号」", "bbox": [774, 2569, 1203, 2747], "task_id": "lufeng.book", "step": 8}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Appointment Booking/Screenshot_2026_1102_100055.jpg", "goal": "点09:00-09:30", "bbox": [650, 2240, 1155, 2475], "task_id": "lufeng.book", "step": 7}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Open Medical Mini Program/Screenshot_20261102_095759.jpg", "goal": "点陆丰市人民医院", "bbox": [40, 496, 1000, 643], "task_id": "lufeng.open_app", "step": 2}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Outpatient Payment/Screenshot_20261102_100537.jpg", "goal": "看完病想交钱", "bbox": [655, 570, 1205, 770], "task_id": "lufeng.pay", "step": 1}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Show Medical Insurance Code/Screenshot_20261102_090228.jpg", "goal": "输入医保电子凭证", "bbox": [40, 646, 900, 796], "task_id": "lufeng.insurance", "step": 2}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Show Medical Insurance Code/Screenshot_20261102_090323.jpg", "goal": "点我的医保凭证", "bbox": [40, 660, 900, 850], "task_id": "lufeng.insurance", "step": 3}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Show Medical Insurance Code/Screenshot_20261102_090403.jpg", "goal": "点刷医保码", "bbox": [93, 728, 1166, 886], "task_id": "lufeng.insurance", "step": 4}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/View Visit Records/Screenshot_20261102_100850.jpg", "goal": "点门诊记录", "bbox": [340, 740, 640, 900], "task_id": "lufeng.records", "step": 2}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Add Patient/Screenshot_20261102_111456.jpg", "goal": "帮家里人加个就诊人", "bbox": [1030, 2680, 1180, 2800], "task_id": "sysu.add_patient", "step": 1}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Add Patient/Screenshot_20261102_111500.jpg", "goal": "点就诊人", "bbox": [80, 700, 290, 900], "task_id": "sysu.add_patient", "step": 2}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Add Patient/Screenshot_20261102_111511.jpg", "goal": "点+添加就诊人", "bbox": [126, 2583, 1133, 2750], "task_id": "sysu.add_patient", "step": 3}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Add Patient/Screenshot_20261102_111514.jpg", "goal": "填写关系、姓名、证件类型、证件号码、手机号后点击「提交」", "bbox": [40, 200, 1220, 1500], "task_id": "sysu.add_patient", "step": 4}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Add Patient/Screenshot_20261102_111514.jpg", "goal": "填写关系、姓名、证件类型、证件号码、手机号后点击「提交」", "bbox": [49, 1508, 1210, 1654], "task_id": "sysu.add_patient", "step": 4}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Appointment Booking/Screenshot_20261102_102533.jpg", "goal": "我想挂个号", "bbox": [646, 2140, 960, 2290], "task_id": "sysu.book", "step": 1}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Appointment Booking/Screenshot_20261102_104713.jpg", "goal": "点天河院区", "bbox": [60, 500, 820, 750], "task_id": "sysu.book", "step": 2}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Appointment Booking/Screenshot_20261102_104718.jpg", "goal": "点神经科", "bbox": [10, 1500, 265, 1655], "task_id": "sysu.book", "step": 3}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Appointment Booking/Screenshot_20261102_104723.jpg", "goal": "点神经内科门诊", "bbox": [530, 670, 926, 795], "task_id": "sysu.book", "step": 4}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Appointment Booking/Screenshot_20261102_104729.jpg", "goal": "点刘佳（头痛专家）", "bbox": [40, 760, 960, 913], "task_id": "sysu.book", "step": 5}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Appointment Booking/Screenshot_20261102_104757.jpg", "goal": "点11-05 星期四 下午", "bbox": [40, 2000, 620, 2155], "task_id": "sysu.book", "step": 6}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Appointment Booking/Screenshot_20261102_104827.jpg", "goal": "核对院区和科室后点击「确认预约」", "bbox": [700, 1755, 1042, 1853], "task_id": "sysu.book", "step": 7}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Login/Screenshot_20261102_102538.jpg", "goal": "想登录这个医院的账号", "bbox": [210, 377, 1049, 526], "task_id": "sysu.login", "step": 1}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Login/Screenshot_20261102_103616.jpg", "goal": "点手机号码快速验证", "bbox": [49, 1229, 1210, 1375], "task_id": "sysu.login", "step": 3}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Login/Screenshot_20261102_103621.jpg", "goal": "点同意", "bbox": [700, 1710, 1010, 1830], "task_id": "sysu.login", "step": 4}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Login/Screenshot_20261102_103629.jpg", "goal": "选择要使用的手机号", "bbox": [84, 1464, 1175, 1713], "task_id": "sysu.login", "step": 5}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Login/Screenshot_20261102_103629.jpg", "goal": "选择要使用的手机号", "bbox": [84, 1740, 1175, 1930], "task_id": "sysu.login", "step": 5}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Open Medical Mini Program/Screenshot_20261102_102445.jpg", "goal": "输入中山大学附属第三医院", "bbox": [126, 158, 1209, 308], "task_id": "sysu.open_app", "step": 2}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Open Medical Mini Program/Screenshot_20261102_102454.jpg", "goal": "点中山大学附属第三医院", "bbox": [40, 494, 1230, 644], "task_id": "sysu.open_app", "step": 3}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Open Medical Mini Program/Screenshot_20261102_102518.jpg", "goal": "在「如何快速访问小程序」弹窗中点击「进入首页」", "bbox": [236, 1607, 1023, 1753], "task_id": "sysu.open_app", "step": 5}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Open Medical Mini Program/Screenshot_20261102_102522.jpg", "goal": "在「重要提醒」中点击「我知道了」，进入互联网医院首页", "bbox": [49, 2446, 1210, 2593], "task_id": "sysu.open_app", "step": 6}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Outpatient Payment/Screenshot_20261102_111248.jpg", "goal": "看完病想交钱", "bbox": [700, 2680, 880, 2800], "task_id": "sysu.pay", "step": 1}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Outpatient Payment/Screenshot_20261102_111253.jpg", "goal": "点缴费订单", "bbox": [600, 300, 862, 409], "task_id": "sysu.pay", "step": 2}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Outpatient Payment/Screenshot_2026_1102_112758.jpg", "goal": "点去缴费", "bbox": [600, 1512, 830, 1605], "task_id": "sysu.pay", "step": 3}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Show Medical Insurance Code/Screenshot_20261102_090228.jpg", "goal": "输入医保电子凭证", "bbox": [140, 670, 560, 780], "task_id": "sysu.insurance", "step": 2}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Show Medical Insurance Code/Screenshot_20261102_090323.jpg", "goal": "点我的医保凭证", "bbox": [130, 660, 820, 810], "task_id": "sysu.insurance", "step": 3}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Show Medical Insurance Code/Screenshot_20261102_090403.jpg", "goal": "点刷医保码", "bbox": [200, 740, 1160, 875], "task_id": "sysu.insurance", "step": 4}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/View Visit Records/Screenshot_20261102_111248.jpg", "goal": "想看看挂过哪些号", "bbox": [700, 2680, 880, 2800], "task_id": "sysu.records", "step": 1}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/View Visit Records/Screenshot_20261102_111248.jpg", "goal": "想看看挂过哪些号", "bbox": [1030, 2680, 1180, 2800], "task_id": "sysu.records", "step": 1}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/View Visit Records/Screenshot_20261102_111253.jpg", "goal": "切换到挂号订单", "bbox": [310, 300, 577, 409], "task_id": "sysu.records", "step": 2}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Show Medical Insurance Code/Path2/Screenshot_20261102_090114.jpg", "task_id": "baiyun.insurance_path2", "step": 1, "goal": "去医院要出示医保码", "bbox": [987, 156, 1104, 257], "quality": "ok"}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Show Medical Insurance Code/Path2/Screenshot_20261102_090114.jpg", "task_id": "baiyun.insurance_path2", "step": 1, "goal": "去医院要出示医保码", "bbox": [1005, 160, 1090, 245], "quality": "ok"}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Show Medical Insurance Code/Path2/Screenshot_20261102_090114.jpg", "task_id": "baiyun.insurance_path2", "step": 1, "goal": "去医院要出示医保码", "bbox": [1135, 165, 1210, 240], "quality": "ok"}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Show Medical Insurance Code/Path2/Screenshot_20261102_090114.jpg", "task_id": "baiyun.insurance_path2", "step": 1, "goal": "去医院要出示医保码", "bbox": [380, 2645, 560, 2800], "quality": "ok"}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Show Medical Insurance Code/Path2/Screenshot_20261102_090114.jpg", "task_id": "baiyun.insurance_path2", "step": 1, "goal": "去医院要出示医保码", "bbox": [700, 2645, 880, 2800], "quality": "ok"}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Show Medical Insurance Code/Path2/Screenshot_20261102_090114.jpg", "task_id": "baiyun.insurance_path2", "step": 1, "goal": "去医院要出示医保码", "bbox": [1030, 2645, 1180, 2800], "quality": "ok"}
+{"file": "images/Chat on WeChat/Call [Name]/Screenshot_20261102_091532.jpg", "task_id": "wechat.call", "step": 2, "goal": "点视频通话", "bbox": [664, 1927, 894, 2196], "quality": "ok"}
+{"file": "images/Chat on WeChat/Open Chat with [Name]/Screenshot_20261102_090834.jpg", "task_id": "wechat.open_chat_v2", "step": 1, "goal": "想找个人聊天", "bbox": [1019, 174, 1074, 229], "quality": "ok"}
+{"file": "images/Chat on WeChat/Open Chat with [Name]/Screenshot_20261102_090834.jpg", "task_id": "wechat.open_chat_v2", "step": 1, "goal": "想找个人聊天", "bbox": [200, 1120, 1250, 1370], "quality": "ok"}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Show Medical Insurance Code/Screenshot_20261102_090114.jpg", "task_id": "lufeng.insurance", "step": 1, "goal": "去医院要出示医保码", "bbox": [1010, 165, 1084, 239], "quality": "ok"}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Show Medical Insurance Code/Screenshot_20261102_090114.jpg", "task_id": "lufeng.insurance", "step": 1, "goal": "去医院要出示医保码", "bbox": [1005, 160, 1090, 245], "quality": "ok"}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Show Medical Insurance Code/Screenshot_20261102_090114.jpg", "task_id": "lufeng.insurance", "step": 1, "goal": "去医院要出示医保码", "bbox": [1135, 165, 1210, 240], "quality": "ok"}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Show Medical Insurance Code/Screenshot_20261102_090114.jpg", "task_id": "lufeng.insurance", "step": 1, "goal": "去医院要出示医保码", "bbox": [380, 2645, 560, 2800], "quality": "ok"}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Show Medical Insurance Code/Screenshot_20261102_090114.jpg", "task_id": "lufeng.insurance", "step": 1, "goal": "去医院要出示医保码", "bbox": [700, 2645, 880, 2800], "quality": "ok"}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Show Medical Insurance Code/Screenshot_20261102_090114.jpg", "task_id": "lufeng.insurance", "step": 1, "goal": "去医院要出示医保码", "bbox": [1030, 2645, 1180, 2800], "quality": "ok"}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Add Patient/Screenshot_20261102_100537.jpg", "task_id": "lufeng.add_patient", "step": 1, "goal": "帮家里人把就诊信息加上", "bbox": [940, 2680, 1160, 2800], "quality": "ok"}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Add Patient/Screenshot_20261102_100537.jpg", "task_id": "lufeng.add_patient", "step": 1, "goal": "帮家里人把就诊信息加上", "bbox": [840, 780, 1160, 1010], "quality": "ok"}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/View Visit Records/Screenshot_20261102_082830.jpg", "task_id": "baiyun.records", "step": 1, "goal": "想看看之前看病的记录", "bbox": [790, 960, 1160, 1090], "quality": "ok"}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/View Visit Records/Screenshot_20261102_082830.jpg", "task_id": "baiyun.records", "step": 1, "goal": "想看看之前看病的记录", "bbox": [470, 2650, 780, 2800], "quality": "ok"}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Open Medical Mini Program/Screenshot_20261101_194117.jpg", "task_id": "baiyun.open_app", "step": 1, "goal": "想打开白云区人民医院的公众号", "bbox": [1009, 164, 1084, 239], "quality": "ok"}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Open Medical Mini Program/Screenshot_20261101_194117.jpg", "task_id": "baiyun.open_app", "step": 1, "goal": "想打开白云区人民医院的公众号", "bbox": [1005, 160, 1090, 245], "quality": "ok"}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Open Medical Mini Program/Screenshot_20261101_194117.jpg", "task_id": "baiyun.open_app", "step": 1, "goal": "想打开白云区人民医院的公众号", "bbox": [1135, 165, 1210, 240], "quality": "ok"}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Open Medical Mini Program/Screenshot_20261101_194117.jpg", "task_id": "baiyun.open_app", "step": 1, "goal": "想打开白云区人民医院的公众号", "bbox": [380, 2645, 560, 2800], "quality": "ok"}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Open Medical Mini Program/Screenshot_20261101_194117.jpg", "task_id": "baiyun.open_app", "step": 1, "goal": "想打开白云区人民医院的公众号", "bbox": [700, 2645, 880, 2800], "quality": "ok"}
+{"file": "images/Medical Interpreting/Baiyun District People Hospital/Open Medical Mini Program/Screenshot_20261101_194117.jpg", "task_id": "baiyun.open_app", "step": 1, "goal": "想打开白云区人民医院的公众号", "bbox": [1030, 2645, 1180, 2800], "quality": "ok"}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/View Visit Records/Screenshot_20261102_100537.jpg", "task_id": "lufeng.records", "step": 1, "goal": "想查一下门诊花的钱", "bbox": [940, 2680, 1160, 2800], "quality": "ok"}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/View Visit Records/Screenshot_20261102_100537.jpg", "task_id": "lufeng.records", "step": 1, "goal": "想查一下门诊花的钱", "bbox": [680, 551, 1138, 786], "quality": "ok"}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Open Medical Mini Program/Screenshot_20261102_095743.jpg", "task_id": "lufeng.open_app", "step": 1, "goal": "想打开陆丰市人民医院的公众号", "bbox": [1010, 165, 1084, 239], "quality": "ok"}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Open Medical Mini Program/Screenshot_20261102_095743.jpg", "task_id": "lufeng.open_app", "step": 1, "goal": "想打开陆丰市人民医院的公众号", "bbox": [1005, 160, 1090, 245], "quality": "ok"}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Open Medical Mini Program/Screenshot_20261102_095743.jpg", "task_id": "lufeng.open_app", "step": 1, "goal": "想打开陆丰市人民医院的公众号", "bbox": [1135, 165, 1210, 240], "quality": "ok"}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Open Medical Mini Program/Screenshot_20261102_095743.jpg", "task_id": "lufeng.open_app", "step": 1, "goal": "想打开陆丰市人民医院的公众号", "bbox": [380, 2645, 560, 2800], "quality": "ok"}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Open Medical Mini Program/Screenshot_20261102_095743.jpg", "task_id": "lufeng.open_app", "step": 1, "goal": "想打开陆丰市人民医院的公众号", "bbox": [700, 2645, 880, 2800], "quality": "ok"}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/Open Medical Mini Program/Screenshot_20261102_095743.jpg", "task_id": "lufeng.open_app", "step": 1, "goal": "想打开陆丰市人民医院的公众号", "bbox": [1030, 2645, 1180, 2800], "quality": "ok"}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/View Visit Records/Screenshot_20261102_100915.jpg", "task_id": "lufeng.records", "step": 3, "goal": "点击某条订单查看详情", "bbox": [50, 320, 1210, 640], "quality": "ok"}
+{"file": "images/Medical Interpreting/Lufeng People Hospital/View Visit Records/Screenshot_20261102_100915.jpg", "task_id": "lufeng.records", "step": 3, "goal": "点击某条订单查看详情", "bbox": [72, 1088, 1222, 1403], "quality": "ok"}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Show Medical Insurance Code/Screenshot_20261102_090114.jpg", "task_id": "sysu.insurance", "step": 1, "goal": "去医院要出示医保码", "bbox": [1005, 160, 1090, 245], "quality": "ok"}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Show Medical Insurance Code/Screenshot_20261102_090114.jpg", "task_id": "sysu.insurance", "step": 1, "goal": "去医院要出示医保码", "bbox": [1135, 165, 1210, 240], "quality": "ok"}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Show Medical Insurance Code/Screenshot_20261102_090114.jpg", "task_id": "sysu.insurance", "step": 1, "goal": "去医院要出示医保码", "bbox": [380, 2645, 560, 2800], "quality": "ok"}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Show Medical Insurance Code/Screenshot_20261102_090114.jpg", "task_id": "sysu.insurance", "step": 1, "goal": "去医院要出示医保码", "bbox": [700, 2645, 880, 2800], "quality": "ok"}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Show Medical Insurance Code/Screenshot_20261102_090114.jpg", "task_id": "sysu.insurance", "step": 1, "goal": "去医院要出示医保码", "bbox": [1030, 2645, 1180, 2800], "quality": "ok"}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Login/Screenshot_20261102_103614.jpg", "task_id": "sysu.login", "step": 2, "goal": "勾选阅读并同意用户服务协议和法律声明及隐私政策", "bbox": [38, 1631, 395, 1721], "quality": "ok"}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Login/Screenshot_20261102_103614.jpg", "task_id": "sysu.login", "step": 2, "goal": "勾选阅读并同意用户服务协议和法律声明及隐私政策", "bbox": [90, 1560, 1200, 1740], "quality": "ok"}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Open Medical Mini Program/Screenshot_20261102_102430.jpg", "task_id": "sysu.open_app", "step": 1, "goal": "想进中山三院的互联网医院", "bbox": [1005, 160, 1090, 245], "quality": "ok"}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Open Medical Mini Program/Screenshot_20261102_102430.jpg", "task_id": "sysu.open_app", "step": 1, "goal": "想进中山三院的互联网医院", "bbox": [1135, 165, 1210, 240], "quality": "ok"}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Open Medical Mini Program/Screenshot_20261102_102430.jpg", "task_id": "sysu.open_app", "step": 1, "goal": "想进中山三院的互联网医院", "bbox": [380, 2645, 560, 2800], "quality": "ok"}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Open Medical Mini Program/Screenshot_20261102_102430.jpg", "task_id": "sysu.open_app", "step": 1, "goal": "想进中山三院的互联网医院", "bbox": [700, 2645, 880, 2800], "quality": "ok"}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Open Medical Mini Program/Screenshot_20261102_102430.jpg", "task_id": "sysu.open_app", "step": 1, "goal": "想进中山三院的互联网医院", "bbox": [1030, 2645, 1180, 2800], "quality": "ok"}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Open Medical Mini Program/Screenshot_20261102_102507.jpg", "task_id": "sysu.open_app", "step": 4, "goal": "点医院服务", "bbox": [650, 1480, 950, 1600], "quality": "ok"}
+{"file": "images/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Open Medical Mini Program/Screenshot_20261102_102507.jpg", "task_id": "sysu.open_app", "step": 4, "goal": "点医院服务", "bbox": [42, 2141, 1121, 2389], "quality": "ok"}
+{"file": "images/Chat on WeChat/Pay with WeChat Pay/Show QR code to Pay/Screenshot_20261102_093730.jpg", "task_id": "wechat.pay_qr", "step": 1, "goal": "想给人家看付款码", "bbox": [1141, 170, 1203, 232], "quality": "ok"}
+{"file": "images/Chat on WeChat/Pay with WeChat Pay/Show QR code to Pay/Screenshot_20261102_093730.jpg", "task_id": "wechat.pay_qr", "step": 1, "goal": "想给人家看付款码", "bbox": [1030, 2680, 1180, 2800], "quality": "ok"}
+{"file": "images/Chat on WeChat/Share Location/IMG_20261102_092242.jpg", "task_id": "wechat.share_location_v2", "step": 4, "goal": "点击右上角的 发送", "bbox": [1015, 132, 1215, 245], "quality": "ok"}
+{"file": "images/Chat on WeChat/Share Location/IMG_20261102_092242.jpg", "task_id": "wechat.share_location_v2", "step": 4, "goal": "点击右上角的 发送", "bbox": [760, 110, 1240, 310], "quality": "ok"}
+{"file": "images/Chat on WeChat/Take and Send a Photo/Screenshot_20261102_091837.jpg", "task_id": "wechat.take_photo_v2", "step": 3, "goal": "点击底部的白色实心圆形按钮", "bbox": [529, 2367, 730, 2568], "quality": "ok"}

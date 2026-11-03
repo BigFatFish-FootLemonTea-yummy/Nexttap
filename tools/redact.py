@@ -31,6 +31,18 @@ OCR_DIR = ROOT / "data" / "eval" / "_ocr"
 BACKUP = ROOT / "data" / "eval" / "images_original"
 PREVIEW = ROOT / "data" / "eval" / "_redact_preview"
 
+
+def _rel(path: Path) -> str:
+    """相对 images/ 的路径（新集是 <App>/<医院>/<流程>/xxx.jpg）。
+
+    同名文件在不同目录下会重名（Screenshot_20261102_090114.jpg 有 3 份），
+    备份 / 预览必须保留目录层级，否则会互相覆盖。
+    """
+    try:
+        return path.relative_to(IMAGES).as_posix()
+    except ValueError:
+        return path.name
+
 # 纯色块的颜色：中性灰，和大多数界面背景接近，不会引入新的视觉干扰
 FILL = (200, 200, 200)
 
@@ -96,9 +108,11 @@ def main(argv: List[str] | None = None) -> int:
         if not BACKUP.exists():
             raise SystemExit(f"没有备份目录：{BACKUP}")
         n = 0
-        for p in BACKUP.iterdir():
+        for p in BACKUP.rglob("*"):
             if p.is_file():
-                shutil.copy2(p, IMAGES / p.name)
+                dst = IMAGES / p.relative_to(BACKUP)
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(p, dst)
                 n += 1
         print(f"已从备份还原 {n} 张图")
         return 0
@@ -115,9 +129,15 @@ def main(argv: List[str] | None = None) -> int:
                 raise SystemExit("--fill 格式应为 R,G,B")
             fill = tuple(parts)  # type: ignore
 
-    imgs = sorted(p for p in IMAGES.iterdir() if p.suffix.lower() in {".jpg", ".png", ".jpeg", ".webp"})
+    # 新集 images/ 是分层的（<App>/<医院>/<流程>/xxx.jpg），必须递归
+    imgs = sorted((p for p in IMAGES.rglob("*")
+                   if p.is_file() and p.suffix.lower() in {".jpg", ".png", ".jpeg", ".webp"}),
+                  key=lambda p: p.relative_to(IMAGES).as_posix())
     plan: List[Tuple[Path, List[Tuple[List[int], str, str]]]] = []
     for p in imgs:
+        # 注意：OCR 缓存 _ocr/ 由 ocr_dump.py 按 stem 命名。新集有 12 个重名文件，
+        # 若要给新集重跑打码，需先把 ocr_dump 也改成按相对路径命名，
+        # 否则会读到另一张同名图的 OCR 结果。
         pii = find_pii(p.stem)
         pii += [(box, "", note) for f, box, note in MANUAL if f == p.name]
         if pii:
@@ -130,7 +150,7 @@ def main(argv: List[str] | None = None) -> int:
     for p, items in plan:
         with Image.open(p) as im:
             w, h = im.size
-        print(f"\n{p.name}  ({w}x{h})")
+        print(f"\n{_rel(p)}  ({w}x{h})")
         for box, text, kind in items:
             print(f"   [{kind:8}] \"{text}\"  bbox={box}")
 
@@ -149,7 +169,9 @@ def main(argv: List[str] | None = None) -> int:
             d = ImageDraw.Draw(im)
             for box, _, _ in items:
                 d.rectangle(pad_box(box, w, h), fill=fill)
-            im.save(PREVIEW / p.name)
+            dst = PREVIEW / _rel(p)
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            im.save(dst)
         print(f"\n预览已存到 {PREVIEW}（原图未改）")
         return 0
 
@@ -161,7 +183,9 @@ def main(argv: List[str] | None = None) -> int:
     if not BACKUP.exists():
         BACKUP.mkdir(parents=True, exist_ok=True)
         for p in imgs:
-            shutil.copy2(p, BACKUP / p.name)
+            dst = BACKUP / _rel(p)
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(p, dst)
         print(f"\n已备份 {len(imgs)} 张原图到 {BACKUP}")
     else:
         print(f"\n备份目录已存在，跳过备份：{BACKUP}")

@@ -31,7 +31,10 @@ _log = logging.getLogger("nexttap.agent")
 
 LocateFn = Callable[[str, str], Dict[str, Any]]
 
-MAX_STEPS = 8
+# 单次 run 最多处理多少张截图。
+# 2026-11-03：评测集里最长的链（三家医院的挂号）都是 8 步，原来设为 8
+# 正好卡在边界，再多一步就会被静默截断。提到 12 留出余量。
+MAX_STEPS = 12
 
 
 def mermaid() -> str:

@@ -1,29 +1,31 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""评测数据修复 + 一致性审计。
+"""评测数据一致性审计（+ 可选的 pred 身份对齐）。
 
-背景（2026-11-01 排查）：
+## 2026-11 变更：gt_first50.jsonl 已废弃
 
-    A. 根因：tools/apply_goal_map.py 只改写 `if tid and step_int == 1` 的行，
-       即**必须有 task_id**。gt.jsonl 里有 5 行没有 task_id，于是被整体跳过：
-       既没补身份，也没做口语化改写，goal 仍是「点关怀版」这类泄漏答案的写法。
+旧集（`gt.jsonl` 164 条 / `images/` 47 张扁平图）配套过一个 `gt_first50.jsonl`，
+本脚本原来靠它「按 bbox 逐像素相等」把掉队的 5 行补回 task_id / step。
 
-    B. 这 5 行不是「无主用例」，而是从多步链里掉出来的步骤。后果：
-       - 评测口径被污染：step 缺省成 1，被算进「step=1 用户口语」这个最关键
-         的指标里，而它们实际是 step>=2 的路径内指令；
-       - 整链统计被拆散：wechat.video_call_son 少一步，gov.elder_mode 整条链消失；
-       - gt_first50 对不上：按 (file, task_id, step) 匹配报「16 条缺预测」。
+新集（`gt_nexttap_v2` → 现在的 `gt.jsonl` 118 条 / `images/` 113 张分层图）
+**每一行都自带 task_id 和 step**，且没有 first50 这个中间产物，所以：
 
-本脚本做两件事：
+    - 「从 first50 补身份」的逻辑已整段删除；
+    - 不再生成 / 校验 gt_first50.jsonl；
+    - 如果以后又出现缺 task_id / step 的行，本脚本只报告，不猜测 ——
+      因为新集没有第二个可信来源可以对 bbox 做交叉验证。
 
-    1. FIX   ：用 gt_first50 里 **bbox 完全相同** 的记录补回 task_id / step。
-               bbox 逐像素相等才算，不做模糊匹配。不改 bbox、不改 goal、不改图片。
-    2. WARN  ：输出一致性审计报告（同一 bbox 对应多个 task_id/step、链上缺步等），
-               这些需要人工判断，脚本不擅自改。
+## 现在做什么
+
+    1. AUDIT ：gt.jsonl 结构体检（必填字段、bbox 越界、task_id/step 完整）
+    2. AUDIT ：同一 bbox 对应多个身份、链上 step 重复、链上缺步
+    3. AUDIT ：新集 task_id 与 paths.jsonl 的命名体系差异提示
+    4. FIX   ：pred.jsonl 里缺 task_id / step 的行，按 (file, goal) 回填
+               （只有唯一匹配才回填，否则不动）
 
 用法：
-    python tools/repair_eval_data.py --dry-run
-    python tools/repair_eval_data.py --write
+    python tools/repair_eval_data.py --dry-run    # 只打印报告（默认行为）
+    python tools/repair_eval_data.py --write      # 回填 pred.jsonl 的缺失身份
 """
 
 from __future__ import annotations
@@ -39,7 +41,6 @@ ROOT = Path(__file__).resolve().parent.parent
 EVAL_DIR = ROOT / "data" / "eval"
 GT = EVAL_DIR / "gt.jsonl"
 PRED = EVAL_DIR / "pred.jsonl"
-FIRST50 = EVAL_DIR / "gt_first50.jsonl"
 PATHS = ROOT / "data" / "rag" / "paths.jsonl"
 
 Key = Tuple[str, str, int, str]
@@ -93,9 +94,11 @@ def has_identity(row: Dict[str, Any]) -> bool:
 
 
 def main(argv: Optional[List[str]] = None) -> int:
-    ap = argparse.ArgumentParser(description="修复 gt 的 task_id/step 并重建 gt_first50")
-    ap.add_argument("--write", action="store_true", help="真正落盘（默认只干跑）")
-    ap.add_argument("--dry-run", action="store_true", help="只打印报告")
+    ap = argparse.ArgumentParser(
+        description="评测数据一致性审计（gt_first50 逻辑已随新集废弃）")
+    ap.add_argument("--write", action="store_true",
+                    help="回填 pred.jsonl 里缺失的 task_id/step（默认只干跑）")
+    ap.add_argument("--dry-run", action="store_true", help="只打印报告（默认）")
     args = ap.parse_args(argv)
     write = args.write and not args.dry_run
 
@@ -103,51 +106,53 @@ def main(argv: Optional[List[str]] = None) -> int:
     if not gt:
         print(f"[FATAL] 读不到 {GT}")
         return 2
-    first50 = load_jsonl(FIRST50)
     chain_targets = load_chain_targets()
 
     # ------------------------------------------------------------------
     print("=" * 72)
-    print("1. 找出缺 task_id / step 的行")
+    print("1. 缺 task_id / step 的行")
     print("=" * 72)
     broken = [(i, r) for i, r in enumerate(gt, 1) if not has_identity(r)]
     if not broken:
         print("  PASS  没有缺字段的行")
-    for i, r in broken:
-        print(f"  第{i:3d}行  {r.get('file')}  goal={r.get('goal')!r}  bbox={r.get('bbox')}")
+    else:
+        for i, r in broken:
+            print(f"  第{i:3d}行  {r.get('file')}  goal={r.get('goal')!r}  bbox={r.get('bbox')}")
+        print()
+        print("  [注意] 新集没有 gt_first50.jsonl 可以交叉验证，本脚本不猜身份。")
+        print("         请手工确认这两行属于哪条链的哪一步后直接改 gt.jsonl。")
 
     # ------------------------------------------------------------------
     print()
     print("=" * 72)
-    print("2. 按 bbox 逐像素相等，从 gt_first50 补回身份")
+    print("2. 结构体检")
     print("=" * 72)
-    f50_by_box: Dict[Tuple[str, Tuple[int, ...]], List[Dict[str, Any]]] = {}
-    for f in first50:
-        f50_by_box.setdefault((f.get("file"), box_of(f)), []).append(f)
+    bad_rows = 0
+    for i, r in enumerate(gt, 1):
+        for field in ("file", "goal"):
+            if not str(r.get(field) or "").strip():
+                bad_rows += 1
+                print(f"  FAIL  第{i:3d}行缺 {field}")
+        box = r.get("bbox") or []
+        if len(box) < 4:
+            bad_rows += 1
+            print(f"  FAIL  第{i:3d}行 bbox 不完整：{box}")
+            continue
+        x0, y0, x1, y1 = (int(v) for v in box[:4])
+        if not (x0 < x1 and y0 < y1):
+            bad_rows += 1
+            print(f"  FAIL  第{i:3d}行 bbox 不是左上/右下顺序：{list(box[:4])}")
+    if not bad_rows:
+        print(f"  PASS  {len(gt)} 行结构完整（file / goal / bbox 齐全且顺序正确）")
 
-    fixed: List[Tuple[int, str, int]] = []
-    unresolved: List[int] = []
-    for i, r in broken:
-        cands = f50_by_box.get((r.get("file"), box_of(r)), [])
-        ids = {(str(c.get("task_id") or "").strip(), int(c.get("step") or 1))
-               for c in cands if str(c.get("task_id") or "").strip()}
-        if len(ids) == 1:
-            tid, step = next(iter(ids))
-            fixed.append((i, tid, step))
-            print(f"  FIX   第{i:3d}行  {r.get('file')}  {r.get('goal')!r}")
-            print(f"        -> task_id={tid}  step={step}   （bbox 完全匹配 gt_first50）")
-        else:
-            unresolved.append(i)
-            why = "gt_first50 里找不到同 bbox 的行" if not ids else f"匹配到多个身份 {ids}"
-            print(f"  FAIL  第{i:3d}行  {r.get('file')}  {r.get('goal')!r}  —— {why}")
-
-    if unresolved:
-        print(f"\n[ABORT] {len(unresolved)} 行无法自动推断，不落盘。请人工确认后重跑。")
-        return 1
-
-    for i, tid, step in fixed:
-        gt[i - 1]["task_id"] = tid
-        gt[i - 1]["step"] = step
+    # 图片是否存在
+    missing_img = sorted({r["file"] for r in gt if not (EVAL_DIR / str(r["file"])).exists()})
+    if missing_img:
+        print(f"  FAIL  {len(missing_img)} 个 file 指向的图片不存在：")
+        for f in missing_img[:10]:
+            print(f"        {f}")
+    else:
+        print(f"  PASS  所有 file 都能在 data/eval/ 下找到（共 {len({r['file'] for r in gt})} 张图）")
 
     # ------------------------------------------------------------------
     print()
@@ -156,7 +161,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     print("=" * 72)
     warns = 0
 
-    # 3.1 同一个 bbox 被标成不同的 task_id / step —— 多半是 apply_goal_map 漏改留下的
+    # 3.1 同一个 bbox 被标成不同的 task_id / step
     print("  3.1 同一 bbox 对应多个身份：")
     by_box: Dict[Tuple[str, Tuple[int, ...]], List[Tuple[int, Dict[str, Any]]]] = {}
     for i, r in enumerate(gt, 1):
@@ -175,6 +180,9 @@ def main(argv: Optional[List[str]] = None) -> int:
         print("    PASS 没有重复 bbox")
 
     # 3.2 链上 step 重复
+    #     注意区分两种情况：
+    #       - 同一 (file, goal) 多行 = 同一目标的多个可接受框，**正常**，不算重复；
+    #       - 同一 step 落在不同图 / 不同 goal 上 = 真的重复，需要人工看。
     print("  3.2 链上 step 重复：")
     chain_steps: Dict[str, List[Tuple[int, int, str]]] = {}
     for i, r in enumerate(gt, 1):
@@ -182,98 +190,109 @@ def main(argv: Optional[List[str]] = None) -> int:
         if tid:
             chain_steps.setdefault(tid, []).append((int(r.get("step") or 1), i, str(r.get("goal"))))
     step_dup = False
+    alt_boxes = 0
     for tid, rows in sorted(chain_steps.items()):
         seen: Dict[int, List[int]] = {}
         for s, i, _g in rows:
             seen.setdefault(s, []).append(i)
         dups = {s: v for s, v in seen.items() if len(v) > 1}
-        if dups:
-            step_dup = True
-            warns += 1
-            print(f"    WARN {tid}: 重复 step {dups}")
+        for s, idxs in dups.items():
+            # 这些行的 (file, goal) 全相同 => 只是多个可接受框
+            sigs = {(str(gt[i - 1].get("file")), str(gt[i - 1].get("goal")).strip()) for i in idxs}
+            if len(sigs) == 1:
+                alt_boxes += 1
+            else:
+                step_dup = True
+                warns += 1
+                print(f"    WARN {tid}: step {s} 出现在 {len(sigs)} 组 (file, goal) 上 -> 行 {idxs}")
     if not step_dup:
-        print("    PASS 没有重复 step")
+        if alt_boxes:
+            print(f"    PASS 没有真正重复的 step（{alt_boxes} 处是同一目标的多个可接受框，属正常）")
+        else:
+            print("    PASS 没有重复 step")
 
     # 3.3 链上缺步（gt 的步数少于 paths.jsonl 的步数）
-    print("  3.3 链上缺步（gt 步数 < paths.jsonl 步数）：")
-    missing_found = False
-    for tid, rows in sorted(chain_steps.items()):
-        want = len(chain_targets.get(tid) or [])
-        got = len({s for s, _i, _g in rows})
-        if want and got < want:
-            missing_found = True
-            warns += 1
-            print(f"    WARN {tid}: gt 有 {got} 步，paths.jsonl 有 {want} 步")
-    if not missing_found:
-        print("    PASS 没有缺步的链")
+    #     新集的 task_id 与 paths.jsonl 是两套命名体系，能对上的才比
+    print("  3.3 链上缺步（gt 步数 < paths.jsonl 步数，仅比对能对上的 task_id）：")
+    comparable = {t: rows for t, rows in chain_steps.items() if t in chain_targets}
+    if not comparable:
+        print("    SKIP  gt 的 task_id 与 paths.jsonl 无交集（两套独立命名），无法比对")
+    else:
+        missing_found = False
+        for tid, rows in sorted(comparable.items()):
+            want = len(chain_targets.get(tid) or [])
+            got = len({s for s, _i, _g in rows})
+            if want and got < want:
+                missing_found = True
+                warns += 1
+                print(f"    WARN {tid}: gt 有 {got} 步，paths.jsonl 有 {want} 步")
+        if not missing_found:
+            print("    PASS 没有缺步的链")
 
-    # 3.4 goal 里含目标框文字（泄漏答案），只查 step=1
-    print("  3.4 step=1 的 goal 泄漏答案（需 OCR，跑 tools/audit_goal_leak.py）")
+    # 3.4 goal 泄漏
+    print("  3.4 step=1 的 goal 泄漏答案：请跑 tools/audit_goal_leak.py（需要 OCR）")
 
     # ------------------------------------------------------------------
     print()
     print("=" * 72)
-    print("4. 修复后的分布")
+    print("4. 数据分布")
     print("=" * 72)
     n1 = sum(1 for r in gt if int(r.get("step") or 1) == 1)
     print(f"  step=1  : {n1}")
     print(f"  step>=2 : {len(gt) - n1}")
     print(f"  总计    : {len(gt)}   （分布在 {len({r['file'] for r in gt})} 张图上）")
+    print(f"  任务链  : {len(chain_steps)} 条")
 
     # ------------------------------------------------------------------
     print()
     print("=" * 72)
-    print("5. 重建 gt_first50")
+    print("5. pred.jsonl 身份对齐")
     print("=" * 72)
-    new50 = gt[:50]
-    n50_1 = sum(1 for r in new50 if int(r.get("step") or 1) == 1)
-    print(f"  取 gt.jsonl 前 {len(new50)} 条，覆盖 {len({r['file'] for r in new50})} 张图")
-    print(f"  其中 step=1 {n50_1} 条，step>=2 {len(new50) - n50_1} 条")
+    pred = load_jsonl(PRED)
+    if not pred:
+        print("  SKIP  pred.jsonl 不存在（还没跑 run_eval.py）")
+        return 0 if not bad_rows else 1
 
     gt_keys = {case_key(r) for r in gt}
-    not_subset = [r for r in new50 if case_key(r) not in gt_keys]
-    if not_subset:
-        print(f"  FAIL  first50 有 {len(not_subset)} 条不在 gt 里，不落盘")
-        return 1
-    print("  PASS  first50 是 gt.jsonl 的子集（按 file+task_id+step+goal 校验）")
+    gt_by_goal: Dict[Tuple[str, str], List[Dict[str, Any]]] = {}
+    for r in gt:
+        gt_by_goal.setdefault((str(r.get("file")), str(r.get("goal")).strip()), []).append(r)
+
+    changed = 0
+    ambiguous = 0
+    for r in pred:
+        if has_identity(r):
+            continue
+        cands = gt_by_goal.get((str(r.get("file")), str(r.get("goal")).strip()), [])
+        ids = {(str(c.get("task_id") or "").strip(), int(c.get("step") or 1))
+               for c in cands if str(c.get("task_id") or "").strip()}
+        if len(ids) == 1:
+            tid, step = next(iter(ids))
+            r["task_id"], r["step"] = tid, step
+            changed += 1
+        else:
+            ambiguous += 1
+
+    print(f"  pred 条数        : {len(pred)}")
+    print(f"  可回填           : {changed}")
+    print(f"  无法唯一确定     : {ambiguous}")
+    unmatched = [r for r in pred if case_key(r) not in gt_keys]
+    print(f"  pred 与 gt 对不上: {len(unmatched)}")
 
     if not write:
         print()
         print(f"[DRY-RUN] 未写入。一致性告警 {warns} 项需人工确认，确认后加 --write")
         return 0
 
-    # ------------------------------------------------------------------
-    for p in (GT, FIRST50, PRED):
-        bak = p.with_suffix(p.suffix + ".bak-repair")
-        if p.exists() and not bak.exists():
-            shutil.copy2(p, bak)
+    if changed:
+        bak = PRED.with_suffix(PRED.suffix + ".bak-repair")
+        if not bak.exists():
+            shutil.copy2(PRED, bak)
             print(f"  备份 -> {bak.name}")
-
-    dump_jsonl(GT, gt)
-    print(f"  写入 {GT.name}（{len(gt)} 条）")
-    dump_jsonl(FIRST50, new50)
-    print(f"  写入 {FIRST50.name}（{len(new50)} 条）")
-
-    # pred 的匿名行也要对齐，否则 case_key 对不上，会被算成「缺预测」。
-    # 注意：pred 的 bbox 是模型预测的，不等于真值框，所以只能按 (file, goal) 匹配。
-    pred = load_jsonl(PRED)
-    if pred:
-        gt_by_goal: Dict[Tuple[str, str], List[Dict[str, Any]]] = {}
-        for r in gt:
-            gt_by_goal.setdefault((str(r.get("file")), str(r.get("goal")).strip()), []).append(r)
-        changed = 0
-        for r in pred:
-            if not has_identity(r):
-                cands = gt_by_goal.get((str(r.get("file")), str(r.get("goal")).strip()), [])
-                ids = {(str(c.get("task_id") or "").strip(), int(c.get("step") or 1))
-                       for c in cands if str(c.get("task_id") or "").strip()}
-                if len(ids) == 1:
-                    r["task_id"], r["step"] = next(iter(ids))
-                    changed += 1
         dump_jsonl(PRED, pred)
-        print(f"  写入 {PRED.name}（对齐 {changed} 条匿名预测）")
-        unmatched = [r for r in pred if case_key(r) not in gt_keys]
-        print(f"  pred 与 gt 对不上的条数：{len(unmatched)}")
+        print(f"  写入 {PRED.name}（回填 {changed} 条）")
+    else:
+        print("  没有需要回填的行，未改动 pred.jsonl")
     return 0
 
 

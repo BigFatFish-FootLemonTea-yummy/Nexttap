@@ -39,15 +39,15 @@ def fail_locate(_path, _goal):
 
 
 IMGS4 = ["a.jpg", "b.jpg", "c.jpg", "d.jpg"]
-GOAL = "我想看看儿子"  # 命中 wechat.video_call_son，4 步
+GOAL = "想给这个人打个电话"  # 命中 wechat.call，3 步
 
-# 1) 4 张图走完 4 步
-r = agent.run(GOAL, IMGS4, locate=ok_locate)
-check("四步完成 status", r["status"], "done")
-check("四步完成 cards", len(r["steps"]), 4)
-check("四步完成 next_step", r["next_step"], None)
+# 1) 走完全部 3 步
+r = agent.run(GOAL, IMGS4[:3], locate=ok_locate)
+check("三步完成 status", r["status"], "done")
+check("三步完成 cards", len(r["steps"]), 3)
+check("三步完成 next_step", r["next_step"], None)
 # 任务名会随数据重建变化，只断言 id 稳定存在、名字非空
-check("任务 ID", r["task_id"], "wechat.video_call_son")
+check("任务 ID", r["task_id"], "wechat.call")
 check("任务名非空", bool(r["task_name"]), True)
 
 # 2) 只给 2 张：中途状态，不是失败

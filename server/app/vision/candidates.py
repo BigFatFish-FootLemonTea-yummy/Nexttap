@@ -185,6 +185,7 @@ def expand_to_tappable(
     others: Sequence[Box],
     img_w: int,
     img_h: int,
+    is_icon: bool = False,
 ) -> Box:
     """把"文字紧框"扩成"可点区域"。
 
@@ -196,7 +197,20 @@ def expand_to_tappable(
       - 左右各扩 0.5 倍字高
       - 向上最多扩 1.8 倍字高（把上方的图标含进来）
       - 但不能越过同一列里最近的元素，避免盖住上一行
+
+    is_icon=True 时走另一套规则（图标本身就是目标，不是"文字上方的图标"）：
+      - 只按自身尺寸外扩 15%，不再向上找图标
+      - 否则会把 63px 的加号扩成 126x214，中心点漂出真值框
     """
+    if is_icon:
+        pad = max(6.0, 0.15 * max(box.w, box.h))
+        return Box(
+            max(0.0, box.x0 - pad),
+            max(0.0, box.y0 - pad),
+            min(float(img_w), box.x1 + pad),
+            min(float(img_h), box.y1 + pad),
+        )
+
     h = box.h
     pad_x = max(8.0, 0.5 * h)
 

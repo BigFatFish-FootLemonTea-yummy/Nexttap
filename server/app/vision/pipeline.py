@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 from typing import Any, Dict
 
@@ -16,7 +17,10 @@ from PIL import Image
 
 from ..llm.select import choose
 from .candidates import expand_to_tappable, merge_lines, to_norm
+from .icons import detect_icons, merge_icons_into_candidates
 from .ocr import run_ocr
+
+logger = logging.getLogger("nexttap.vision")
 
 
 def locate_image(image_path: str, goal: str) -> Dict[str, Any]:
@@ -49,6 +53,19 @@ def locate_image(image_path: str, goal: str) -> Dict[str, Any]:
 
     candidates = merge_lines(raw)
 
+    # 把无文字图标也加进候选。
+    # 不加这一步，「微信右上角加号」「搜索镜」「相机快门」永远进不了候选列表，
+    # 用户说「想扫码付钱」时模型只能回「屏幕上没有这个按钮」——它根本没看见。
+    # 图标检测失败不影响主流程（降级为纯文字候选）。
+    if os.getenv("NEXTTAP_ICONS", "1") != "0":
+        try:
+            icons = detect_icons(image_path, candidates)
+            candidates = merge_icons_into_candidates(
+                candidates, icons, img_w=width, img_h=height
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("图标检测失败，降级为纯文字候选：%s", exc)
+
     try:
         decision = choose(candidates, goal, width, height)
     except Exception as exc:  # noqa: BLE001
@@ -70,7 +87,14 @@ def locate_image(image_path: str, goal: str) -> Dict[str, Any]:
         return {"ok": False, "error": "模型返回了越界的候选编号"}
 
     target = candidates[index]
-    box = expand_to_tappable(target.box, [c.box for c in candidates], width, height)
+    # 图标候选的 text 形如 `<右上角加号按钮>`，走图标专用外扩规则
+    box = expand_to_tappable(
+        target.box,
+        [c.box for c in candidates],
+        width,
+        height,
+        is_icon=target.text.startswith("<"),
+    )
 
     return {
         "ok": True,

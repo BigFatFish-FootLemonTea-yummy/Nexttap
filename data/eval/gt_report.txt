@@ -1,0 +1,71 @@
+用例总数 118
+未填 bbox 3
+缺失清单：
+  - wechat.friend_qr_scan #3
+  - wechat.share_location_v2 #5
+  - wechat.take_photo_v2 #5
+
+按 task_id 分布：
+    4  baiyun.add_patient           steps=[1, 2, 3, 4]
+   10  baiyun.book                  steps=[1, 2, 3, 4, 5, 6, 7, 8]
+    4  baiyun.insurance_path1       steps=[1, 2, 3, 4]
+    4  baiyun.insurance_path2       steps=[1, 2, 3, 4]
+    2  baiyun.open_app              steps=[1, 2]
+    2  baiyun.pay                   steps=[1, 2]
+    3  baiyun.records               steps=[1, 2, 3]
+    4  lufeng.add_patient           steps=[1, 2, 3, 4]
+   10  lufeng.book                  steps=[1, 2, 3, 4, 5, 6, 7, 8]
+    4  lufeng.insurance             steps=[1, 2, 3, 4]
+    2  lufeng.open_app              steps=[1, 2]
+    1  lufeng.pay                   steps=[1]
+    3  lufeng.records               steps=[1, 2, 3]
+    4  sysu.add_patient             steps=[1, 2, 3, 4]
+    7  sysu.book                    steps=[1, 2, 3, 4, 5, 6, 7]
+    4  sysu.insurance               steps=[1, 2, 3, 4]
+    6  sysu.login                   steps=[1, 2, 3, 4, 5]
+    6  sysu.open_app                steps=[1, 2, 3, 4, 5, 6]
+    3  sysu.pay                     steps=[1, 2, 3]
+    2  sysu.records                 steps=[1, 2]
+    4  wechat.call                  steps=[1, 2, 3]
+    7  wechat.friend_phone          steps=[1, 2, 3, 4, 5, 6, 7]
+    2  wechat.friend_qr_scan        steps=[1, 2]
+    3  wechat.friend_qr_show        steps=[1, 2, 3]
+    3  wechat.open_chat_v2          steps=[1, 2, 3]
+    2  wechat.pay_qr                steps=[1, 2]
+    2  wechat.pay_scan              steps=[1, 2]
+    4  wechat.share_location_v2     steps=[1, 2, 3, 4]
+    4  wechat.take_photo_v2         steps=[1, 2, 3, 4]
+    2  wechat.voice_msg             steps=[1, 2]
+
+涉及图片 112 张（新复制 0 张到 data/eval/images_v2/）
+按目录分布：
+    4  images_v2/Chat on WeChat/Call [Name]
+    3  images_v2/Chat on WeChat/Open Chat with [Name]
+    2  images_v2/Chat on WeChat/Pay with WeChat Pay/Scan to Pay
+    2  images_v2/Chat on WeChat/Pay with WeChat Pay/Show QR code to Pay
+    7  images_v2/Chat on WeChat/Send Friend Request/With Phone Number
+    3  images_v2/Chat on WeChat/Send Friend Request/With QR  code/Display QR Code to Add Friend
+    2  images_v2/Chat on WeChat/Send Friend Request/With QR  code/Scan to Add
+    2  images_v2/Chat on WeChat/Send Voice Message
+    4  images_v2/Chat on WeChat/Share Location
+    4  images_v2/Chat on WeChat/Take and Send a Photo
+    4  images_v2/Medical Interpreting/Baiyun District People Hospital/Add Patient
+   10  images_v2/Medical Interpreting/Baiyun District People Hospital/Appointment Booking
+    2  images_v2/Medical Interpreting/Baiyun District People Hospital/Open Medical Mini Program
+    2  images_v2/Medical Interpreting/Baiyun District People Hospital/Outpatient Payment
+    4  images_v2/Medical Interpreting/Baiyun District People Hospital/Show Medical Insurance Code/Path1
+    4  images_v2/Medical Interpreting/Baiyun District People Hospital/Show Medical Insurance Code/Path2
+    3  images_v2/Medical Interpreting/Baiyun District People Hospital/View Visit Records
+    4  images_v2/Medical Interpreting/Lufeng People Hospital/Add Patient
+   10  images_v2/Medical Interpreting/Lufeng People Hospital/Appointment Booking
+    2  images_v2/Medical Interpreting/Lufeng People Hospital/Open Medical Mini Program
+    1  images_v2/Medical Interpreting/Lufeng People Hospital/Outpatient Payment
+    4  images_v2/Medical Interpreting/Lufeng People Hospital/Show Medical Insurance Code
+    3  images_v2/Medical Interpreting/Lufeng People Hospital/View Visit Records
+    4  images_v2/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Add Patient
+    7  images_v2/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Appointment Booking
+    6  images_v2/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Login
+    6  images_v2/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Open Medical Mini Program
+    3  images_v2/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Outpatient Payment
+    4  images_v2/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/Show Medical Insurance Code
+    2  images_v2/Medical Interpreting/The Third Affiliated Hospital of Sun Yat-sen University/View Visit Records

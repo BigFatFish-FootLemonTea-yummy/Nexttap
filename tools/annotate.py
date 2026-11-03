@@ -25,6 +25,10 @@
     - 认 .png / .jpg / .jpeg / .webp / .bmp / .gif（JPG 会自动转 PNG 缓存）
     - 同一张图可以保存任意多个用例
     - 图片按窗口大小等比缩放显示，保存的是【原图像素坐标】
+    - **递归遍历 images/ 的所有子目录**：新集是
+      `images/<App>/<医院>/<流程>/xxx.jpg` 的分层结构，
+      写进 gt.jsonl 的 file 字段是相对 data/eval/ 的完整路径
+      （例如 `images/Chat on WeChat/Call [Name]/Screenshot_20261102_091532.jpg`）
 """
 
 from __future__ import annotations
@@ -182,6 +186,20 @@ def _convert_with_system_drawing(src: Path, dst: Path) -> bool:
     return result.returncode == 0 and dst.exists() and dst.stat().st_size > 0
 
 
+def _cache_path(path: Path) -> Path:
+    """PNG 缓存文件名。
+
+    新集里同名文件分布在不同目录（Screenshot_20261102_090114.jpg 在 3 个目录下
+    各有一份，且 mtime 相同），只用 stem 会互相覆盖 —— 用相对路径 + mtime 做键。
+    """
+    try:
+        rel = path.relative_to(IMAGES_DIR).as_posix()
+    except ValueError:
+        rel = path.name
+    safe = rel.replace("/", "__").replace(" ", "_").replace("[", "(").replace("]", ")")
+    return CACHE_DIR / f"{safe}_{int(path.stat().st_mtime)}.png"
+
+
 def load_photo(path: Path) -> "tk.PhotoImage":
     """三条路按顺序试，全都不需要联网。"""
     try:
@@ -199,7 +217,7 @@ def load_photo(path: Path) -> "tk.PhotoImage":
         raise RuntimeError(f"Pillow 读不了这张图：{path.name}（{exc}）") from exc
 
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    cached = CACHE_DIR / f"{path.stem}_{int(path.stat().st_mtime)}.png"
+    cached = _cache_path(path)
     if not cached.exists():
         if not _convert_with_system_drawing(path.resolve(), cached.resolve()):
             raise RuntimeError(
@@ -233,7 +251,7 @@ def load_pil_image(path: Path) -> "Image.Image":
     from PIL import Image  # 走到这里说明 Pillow 其实没装，下面会再失败一次
 
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    cached = CACHE_DIR / f"{path.stem}_{int(path.stat().st_mtime)}.png"
+    cached = _cache_path(path)
     if not cached.exists():
         if not _convert_with_system_drawing(path.resolve(), cached.resolve()):
             raise RuntimeError(f"打不开这张图：{path.name}")
@@ -250,8 +268,13 @@ class Annotator:
         self.root.title("指一下 · bbox 标注")
         self.root.geometry("1180x860")
 
+        # 新集 images/ 是分层的（<App>/<医院>/<流程>/xxx.jpg），必须递归；
+        # 而且不同目录下有同名文件，所以排序按「相对 images/ 的完整路径」，
+        # 这样同一目录的图会连续出现，标注时不容易串。
         self.files: List[Path] = sorted(
-            p for p in IMAGES_DIR.iterdir() if p.suffix.lower() in SUFFIXES
+            (p for p in IMAGES_DIR.rglob("*")
+             if p.is_file() and p.suffix.lower() in SUFFIXES),
+            key=lambda p: p.relative_to(IMAGES_DIR).as_posix(),
         ) if IMAGES_DIR.exists() else []
         self.idx = 0
         self.grouped = load_gt()
@@ -363,7 +386,9 @@ class Annotator:
     # ---------------- 数据访问 ----------------
 
     def current_rel(self) -> str:
-        return f"images/{self.files[self.idx].name}"
+        # 分层目录：images/<App>/<医院>/<流程>/xxx.jpg
+        rel = self.files[self.idx].relative_to(IMAGES_DIR).as_posix()
+        return f"images/{rel}"
 
     def cases(self) -> List[dict]:
         return self.grouped.get(self.current_rel(), [])
@@ -399,8 +424,9 @@ class Annotator:
             return
 
         path = self.files[self.idx]
+        rel = path.relative_to(IMAGES_DIR).as_posix()
         self.root.title(
-            f"指一下 · bbox 标注 — {path.name}  [{self.idx + 1}/{len(self.files)}]"
+            f"指一下 · bbox 标注 — {rel}  [{self.idx + 1}/{len(self.files)}]"
         )
 
         self.reset_pending()
@@ -562,13 +588,14 @@ class Annotator:
         if self.idx >= len(self.files):
             return
         path = self.files[self.idx]
+        rel = path.relative_to(IMAGES_DIR).as_posix()
         n = len(self.cases())
         hint = "拖框 → 填目标 → S 保存；同一张图可标多个" if n == 0 else \
                f"已标 {n} 个，可继续框新的入口"
         chains = len({c["task_id"] for c in self.cases() if c.get("task_id")})
         extra = f" | 本图涉及 {chains} 条链" if chains else ""
         self.status.set(
-            f"{path.name} | {self.img_w}x{self.img_h} | {hint} | "
+            f"{rel} | {self.img_w}x{self.img_h} | {hint} | "
             f"合计 {self.total_cases()} 个用例 / {len(self.grouped)} 张图{extra}"
         )
 

@@ -37,6 +37,9 @@ data/eval/*.jsonl.tmp
 data/eval/*.jsonl.bak
 data/eval/*.bak-*
 data/eval/_leak_audit.json
+# 标注工具的运行产物（每次跑 collect_failed.py 都会重写）
+data/eval/_failed_cases.json
+data/eval/_guide_review.json
 
 # ============================================================
 # 一次性数据准备脚本（本地保留，不进仓库）

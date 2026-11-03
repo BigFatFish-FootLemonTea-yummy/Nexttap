@@ -11,9 +11,12 @@
     python tools/run_eval.py                     # 跑全部
     python tools/run_eval.py --limit 10          # 先试 10 个用例
     python tools/run_eval.py --base http://127.0.0.1:8000
-    python tools/run_eval.py --file 001.jpg      # 只跑某一张图的全部用例
+    python tools/run_eval.py --file "Add Patient"   # 只跑路径里含该字符串的图
 
 输出：data/eval/pred.jsonl（每行一个用例的预测结果）
+
+路径说明：gt 的 `file` 是相对 `data/eval/` 的路径（新集是
+`images/<App>/<医院>/<流程>/xxx.jpg`），所以 `EVAL_DIR / rel` 能直接拼出真实路径。
 """
 
 from __future__ import annotations
@@ -132,7 +135,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="批量跑 hit@1 评测（支持一图多用例）")
     parser.add_argument("--base", default="http://127.0.0.1:8000")
     parser.add_argument("--limit", type=int, default=0, help="只跑前 N 个用例，0 = 全部")
-    parser.add_argument("--file", default="", help="只跑文件名包含该字符串的图")
+    parser.add_argument("--file", default="", help="只跑文件路径包含该字符串的图（支持子目录名，如 'Add Patient'）")
     parser.add_argument("--timeout", type=int, default=120)
     parser.add_argument("--gt", type=Path, default=GT_PATH, help="真值文件，默认 gt.jsonl")
     parser.add_argument("--out", type=Path, default=PRED_PATH)
@@ -172,7 +175,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         step = int(row.get("step", 1) or 1)
         img = EVAL_DIR / rel
         tag = f"[{tid} 第{step}步] " if tid else ""
-        print(f"[{i}/{len(rows)}] {tag}{Path(rel).name}  goal={goal}")
+        # 新集里同名文件分布在不同目录（Screenshot_xxx.jpg 会重名），
+        # 只打印 basename 分不清是哪一张，这里带上目录尾部两级
+        shown = Path(rel)
+        shown = shown.parent.name + "/" + shown.name if shown.parent.name else shown.name
+        print(f"[{i}/{len(rows)}] {tag}{shown}  goal={goal}")
 
         if not img.exists():
             print(f"    ! 图片不存在：{img}")

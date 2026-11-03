@@ -1,52 +1,61 @@
-{"query": "报到那个机器怎么用", "task_id": "hospital.check_in", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "先看病后付钱那个", "task_id": "hospital.quick_pay", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "哪家药店能报销", "task_id": "gov.insurance_anchor", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "这个科是看什么的", "task_id": "hospital.dept_intro", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "体检的钱在哪交", "task_id": "hospital.physical_pay", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "给我看病的大夫都有谁", "task_id": "hospital.doctor_team", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "我一直找的那个医生", "task_id": "hospital.my_doctor", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "挂完号下一步干嘛", "task_id": "hospital.confirm_book", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "我以前来看过病，记录在哪", "task_id": "hospital.visit_record", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "手机上那个健康卡", "task_id": "gov.health_card", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "证明我是我", "task_id": "gov.real_name", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "交了钱还没做完的", "task_id": "hospital.pay_pending", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "已经付过的单子", "task_id": "hospital.pay_done", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "看病要扫的那个二维码", "task_id": "gov.health_code", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "我的证件都放哪了", "task_id": "gov.digital_space", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "到了就能办的那个", "task_id": "gov.quick_service", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "我的社保卡里有什么", "task_id": "gov.social_card_query", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "看病直接扣医保", "task_id": "gov.insurance_pay", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "开车的本子", "task_id": "gov.driving", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "出国要办的那个", "task_id": "gov.exit_entry", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "开店要办执照", "task_id": "gov.market_supervise", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "回到微信最外面", "task_id": "wechat.open_wechat", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "科室的介绍展开看看", "task_id": "hospital.dept_detail", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "我没有医院的卡", "task_id": "hospital.no_card", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "把卡跟手机绑一起", "task_id": "hospital.bind_card", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "用什么证件挂号", "task_id": "hospital.pick_id_type", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "我是农村户口那种", "task_id": "gov.insurance_resident", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "我自己干个体的", "task_id": "gov.insurance_flex", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "居民医保的钱怎么交", "task_id": "gov.insurance_pay_fee", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "在本地看病", "task_id": "gov.local_medical", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "看完能报多少", "task_id": "gov.reimbursement", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "然后呢", "task_id": "gov.login_next", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "对着脸照一下", "task_id": "gov.face_verify", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "我农村的养老金能领多少", "task_id": "gov.pension_query", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "上班受伤了怎么办", "task_id": "gov.work_injury", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "不干了社保怎么改", "task_id": "gov.unemployment_change", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "点开始", "task_id": "gov.start_service", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "证明我退休金多少", "task_id": "gov.pension_proof", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "我交社保的证明在哪开", "task_id": "gov.social_cert_query", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "我一共交了多少", "task_id": "gov.rights_record", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "我的就诊卡呢", "task_id": "hospital.card_manage", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "挂号前要看什么", "task_id": "hospital.book_notice", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "第一次挂号怎么弄", "task_id": "hospital.book_guide", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "还有哪些大夫", "task_id": "hospital.expand_doctor", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "想上午去", "task_id": "hospital.pick_morning", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "扫一下码", "task_id": "gov.social_scan", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "我交社保的权益单", "task_id": "gov.rights_query", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "社保卡能干嘛", "task_id": "gov.social_card_service", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "进白云区医院", "task_id": "hospital.enter_app", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "进陆丰医院", "task_id": "hospital.enter_other", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "有活动看看", "task_id": "gov.promo", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
-{"query": "想约周六的", "task_id": "hospital.pick_date", "note": "留出集：覆盖 retrieval_eval 未测的 53 条任务"}
+{"query": "手机上怎么才能互相看见着讲话", "task_id": "wechat.call", "note": "说「看见着讲话」，不说「视频通话」"}
+{"query": "想看见对方的脸再聊", "task_id": "wechat.call", "note": ""}
+{"query": "通讯录里找不到要联系的那位", "task_id": "wechat.open_chat_v2", "note": "用「通讯录」代替「微信」"}
+{"query": "想进某个人的页面", "task_id": "wechat.open_chat_v2", "note": ""}
+{"query": "在商店里照一下那个方块就把账结了", "task_id": "wechat.pay_scan", "note": "用「方块」代指二维码"}
+{"query": "摊子上买东西，怎么给人家钱", "task_id": "wechat.pay_scan", "note": ""}
+{"query": "柜台的人拿机器照我手机，我该亮哪个", "task_id": "wechat.pay_qr", "note": ""}
+{"query": "轮到我结账，得让人家照我的手机", "task_id": "wechat.pay_qr", "note": ""}
+{"query": "只知道他的电话号码，别的啥也没有", "task_id": "wechat.friend_phone", "note": ""}
+{"query": "有个号码在我本子上，想把人弄进微信", "task_id": "wechat.friend_phone", "note": ""}
+{"query": "怎么让别人把我存到他手机里", "task_id": "wechat.friend_qr_show", "note": "「存到手机里」= 加好友"}
+{"query": "他要加我，我这边该亮什么", "task_id": "wechat.friend_qr_show", "note": ""}
+{"query": "他手机上有个方块，我照一下就成朋友了", "task_id": "wechat.friend_qr_scan", "note": ""}
+{"query": "对面递过来一张卡片让我照一下", "task_id": "wechat.friend_qr_scan", "note": ""}
+{"query": "一个字一个字敲太慢，直接讲", "task_id": "wechat.voice_msg", "note": "说「敲太慢」，不说「打字」"}
+{"query": "想把我的声音传给他", "task_id": "wechat.voice_msg", "note": ""}
+{"query": "家里人问我在哪，我怎么给他说清楚", "task_id": "wechat.share_location_v2", "note": ""}
+{"query": "我在外头不认路，怎么让人找过来", "task_id": "wechat.share_location_v2", "note": ""}
+{"query": "拿手机当场拍一个给他", "task_id": "wechat.take_photo_v2", "note": ""}
+{"query": "眼前这东西想马上给他看", "task_id": "wechat.take_photo_v2", "note": ""}
+{"query": "刚拍的那张，想立刻就给他看", "task_id": "wechat.take_photo_v2", "note": ""}
+{"query": "白云区那家公立医院，手机上从哪儿进去", "task_id": "baiyun.open_app", "note": ""}
+{"query": "在手机上把白云区的医院调出来", "task_id": "baiyun.open_app", "note": ""}
+{"query": "白云医院想找个大夫看看，先干哪一步", "task_id": "baiyun.book", "note": ""}
+{"query": "白云医院看门诊要怎么排上", "task_id": "baiyun.book", "note": ""}
+{"query": "白云医院要带上老伴一起看，她的资料怎么录", "task_id": "baiyun.add_patient", "note": ""}
+{"query": "白云医院第一次用，家里人的资料从哪儿填", "task_id": "baiyun.add_patient", "note": ""}
+{"query": "白云医院看完病了，账还没结", "task_id": "baiyun.pay", "note": ""}
+{"query": "白云医院开的收费单子怎么处理", "task_id": "baiyun.pay", "note": ""}
+{"query": "白云医院收银的地方要我亮个东西", "task_id": "baiyun.insurance_path1", "note": ""}
+{"query": "白云医院往下拉，找医保那一栏", "task_id": "baiyun.insurance_path1", "note": ""}
+{"query": "不在医院页面里，另外找个地方把码弄出来", "task_id": "baiyun.insurance_path2", "note": ""}
+{"query": "在微信上搜一搜，能不能弄出那个医保的码", "task_id": "baiyun.insurance_path2", "note": ""}
+{"query": "白云医院前几回看病的事，想翻出来看看", "task_id": "baiyun.records", "note": ""}
+{"query": "白云医院以前开的什么药，还能不能查到", "task_id": "baiyun.records", "note": ""}
+{"query": "陆丰市那家公立医院，手机上从哪儿进去", "task_id": "lufeng.open_app", "note": ""}
+{"query": "在手机上把陆丰的医院调出来", "task_id": "lufeng.open_app", "note": ""}
+{"query": "陆丰医院想找个大夫看看，先干哪一步", "task_id": "lufeng.book", "note": ""}
+{"query": "陆丰医院看门诊要怎么排上", "task_id": "lufeng.book", "note": ""}
+{"query": "陆丰医院要带上老伴一起看，她的资料怎么录", "task_id": "lufeng.add_patient", "note": ""}
+{"query": "陆丰医院第一次用，家里人的资料从哪儿填", "task_id": "lufeng.add_patient", "note": ""}
+{"query": "陆丰医院看完病了，账还没结", "task_id": "lufeng.pay", "note": ""}
+{"query": "陆丰医院开的收费单子怎么处理", "task_id": "lufeng.pay", "note": ""}
+{"query": "陆丰医院收银的地方要我亮个东西", "task_id": "lufeng.insurance", "note": ""}
+{"query": "陆丰医院结账时要用医保那个东西", "task_id": "lufeng.insurance", "note": ""}
+{"query": "陆丰医院前几回看病的事，想翻出来看看", "task_id": "lufeng.records", "note": ""}
+{"query": "陆丰医院以前开的什么药，还能不能查到", "task_id": "lufeng.records", "note": ""}
+{"query": "中山三院在手机上的那个入口怎么找", "task_id": "sysu.open_app", "note": ""}
+{"query": "三院网上看病的地方从哪儿进", "task_id": "sysu.open_app", "note": ""}
+{"query": "中山三院想找个大夫看看，先干哪一步", "task_id": "sysu.book", "note": ""}
+{"query": "中山三院看门诊要怎么排上", "task_id": "sysu.book", "note": ""}
+{"query": "中山三院要带上老伴一起看，她的资料怎么录", "task_id": "sysu.add_patient", "note": ""}
+{"query": "中山三院第一次用，家里人的资料从哪儿填", "task_id": "sysu.add_patient", "note": ""}
+{"query": "中山三院看完病了，账还没结", "task_id": "sysu.pay", "note": ""}
+{"query": "中山三院开的收费单子怎么处理", "task_id": "sysu.pay", "note": ""}
+{"query": "中山三院收银的地方要我亮个东西", "task_id": "sysu.insurance", "note": ""}
+{"query": "中山三院结账时要用医保那个东西", "task_id": "sysu.insurance", "note": ""}
+{"query": "中山三院前几回约的，想翻出来看看", "task_id": "sysu.records", "note": ""}
+{"query": "中山三院以前约过哪个大夫，还能不能查到", "task_id": "sysu.records", "note": ""}
+{"query": "中山三院得先有自己的号才能用", "task_id": "sysu.login", "note": ""}
+{"query": "中山三院老弹出来让我弄手机号", "task_id": "sysu.login", "note": ""}

@@ -20,6 +20,11 @@
     python tools/audit_goal_leak.py                # 全量审计
     python tools/audit_goal_leak.py --only-leak    # 只打印泄漏的
     python tools/audit_goal_leak.py --json out.json
+
+注意：新集（gt_nexttap_v2 → gt.jsonl，118 条 / 113 张分层图）的 goal 已经按
+规范写好（step=1 是用户口语，step>=2 是动作指令），理论上不该有泄漏。
+旧集的 `data/eval/goal_map.tsv` 与 `tools/apply_goal_map.py` 已随旧集删除，
+所以本脚本现在只**报告**泄漏，不再提示去改映射表 —— 直接改 gt.jsonl 里的 goal。
 """
 
 from __future__ import annotations
@@ -126,11 +131,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         for tid in sorted(by_tid):
             print(f"  {tid}")
             for d in by_tid[tid]:
-                print(f"    {d['file']:16} goal={d['goal']!r:24} 框内={d['leak']}")
+                print(f"    {d['file']}  goal={d['goal']!r}  框内={d['leak']}")
         print()
-        print("  改法：在 data/eval/goal_map.tsv 里加一行")
-        print("        <task_id>\\t<旧goal>\\t<新的口语说法>\\tdraft")
-        print("        然后 python tools/apply_goal_map.py --map data/eval/goal_map.tsv --dry-run")
+        print("  改法：直接改 data/eval/gt.jsonl 里对应的 goal，")
+        print("        换成不含目标框文字的「用户会怎么说」，然后重跑本脚本复核。")
+        print("        （旧集的 goal_map.tsv + apply_goal_map.py 已随新集删除）")
     else:
         print()
         print("  PASS  step=1 没有泄漏答案的 goal")
@@ -143,7 +148,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         print()
         print("-- 框内无 OCR 文字的用例（图标类，建议降级为区域描述）--")
         for d in empty:
-            print(f"  {d['file']:16} {d['goal']!r}")
+            print(f"  {d['file']}  {d['goal']!r}")
 
     return 0
 
