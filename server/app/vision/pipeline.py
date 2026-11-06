@@ -20,6 +20,8 @@ from .candidates import expand_to_tappable, merge_lines, to_norm
 from .icons import detect_icons, merge_icons_into_candidates
 from .ocr import run_ocr
 
+from ..config import settings
+
 logger = logging.getLogger("nexttap.vision")
 
 
@@ -102,6 +104,8 @@ def locate_image(image_path: str, goal: str) -> Dict[str, Any]:
         "bbox_px": box.as_list(),
         "bbox_norm": to_norm(box, width, height),
         "confidence": decision["confidence"],
+        "low_confidence": float(decision["confidence"]) < settings.min_confidence,
         "instruction": decision["instruction"],
+        "reason": decision.get("reason", ""),
         "candidate_count": len(candidates),
     }
